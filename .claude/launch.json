@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wedding-copilot",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/Users/kthkellogg/Documents/GitHub/wedding-copilot/server.js"],
+      "port": 3000
+    }
+  ]
+}

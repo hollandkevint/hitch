@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 42 26" width="42" height="26">
+        <circle cx="27" cy="13" r="8.4" fill="none" stroke="var(--forest)" stroke-width="2.3"/>
+        <circle cx="16" cy="13" r="8.4" fill="none" stroke="var(--paper)" stroke-width="5"/>
+        <circle cx="16" cy="13" r="8.4" fill="none" stroke="var(--forest)" stroke-width="2.3"/>
+      </svg>
+    </span>
+    <div>
+      <h1>Hitch</h1>
+      <p id="wedding-meta" class="meta"></p>
+    </div>
+  </div>
+  <div class="view-toggle" role="tablist" aria-label="Switch view">
+    <button id="btn-couple" class="active" role="tab" aria-selected="true" aria-controls="couple-view">Couple view</button>
+    <button id="btn-planner" role="tab" aria-selected="false" aria-controls="planner-view" tabindex="-1">Planner view</button>
+  </div>
+</header>
+
+<main id="couple-view" role="tabpanel" aria-labelledby="btn-couple">
+  <section class="timeline">
+    <h2>Your timeline</h2>
+    <ul id="task-list"></ul>
+    <h3>Done</h3>
+    <ul id="done-list" class="done"></ul>
+  </section>
+
+  <section class="copilot">
+    <h2>Ask Hitch <span class="badge">knows your wedding</span></h2>
+    <div id="chat" role="log" aria-live="polite"></div>
+    <div id="action-slot" aria-live="polite"></div>
+    <form id="ask-form">
+      <input id="ask-input" autocomplete="off" aria-label="Ask Hitch"
+             placeholder='Try: "What&#39;s left before the wedding?"'>
+      <button type="submit">Ask</button>
+    </form>
+    <p class="hints">Try: <button type="button" class="hint">What's left before the wedding?</button> ·
+      <button type="button" class="hint">Mark the caterer tasting done</button> ·
+      <button type="button" class="hint">The Hendersons declined</button> ·
+      <button type="button" class="hint">Should we cut the guest list?</button> ·
+      <button type="button" class="hint">What flowers are trending?</button></p>
+  </section>
+</main>
+
+<main id="planner-view" role="tabpanel" aria-labelledby="btn-planner" hidden>
+  <section class="timeline">
+    <h2>All tasks <span class="badge readonly">read-only</span></h2>
+    <ul id="planner-task-list"></ul>
+  </section>
+  <section class="audit">
+    <h2>Audit trail</h2>
+    <ul id="audit-list"></ul>
+  </section>
+</main>
+
+<div id="confirm-overlay" hidden>
+  <div class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <h3 id="confirm-title">This changes shared records</h3>
+    <div id="confirm-text"></div>
+    <div class="confirm-buttons">
+      <button id="confirm-cancel">Cancel</button>
+      <button id="confirm-yes" class="danger">Yes, make the change</button>
+    </div>
+  </div>
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>

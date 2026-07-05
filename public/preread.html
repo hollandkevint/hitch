@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch — the prototype and the thinking behind it</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --ivory: #faf7f2; --paper: #fffdf9; --ink: #26302b; --muted: #7d7a72;
+    --line: #e9e2d6; --forest: #2b4a3e; --forest-deep: #223b31; --forest-soft: #e8efe9;
+    --terracotta: #b4532a; --terracotta-soft: #f7e9e1;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  body { background: var(--ivory); color: var(--ink); font-family: var(--serif); line-height: 1.65; }
+
+  .masthead { background: var(--forest); color: #f2f0e9; padding: 72px 24px 64px; }
+  .masthead-inner { max-width: 720px; margin: 0 auto; }
+  .eyebrow {
+    font-family: var(--sans); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #a8c0b2;
+  }
+  .masthead h1 { font-size: 2.9rem; font-weight: 600; line-height: 1; margin: 0; letter-spacing: 0.01em; }
+  .mast-brand { display: flex; align-items: center; gap: 17px; margin: 20px 0 8px; }
+  .mast-mark { display: inline-flex; flex-shrink: 0; }
+  .masthead .tagline { font-family: var(--sans); font-size: 0.98rem; letter-spacing: 0.03em; color: #dfe9e1; margin-bottom: 18px; }
+  .masthead .dek { font-size: 1.17rem; color: #cfddd3; max-width: 58ch; font-style: italic; }
+  .masthead .byline { font-family: var(--sans); font-size: 0.82rem; color: #a8c0b2; margin-top: 28px; }
+
+  main { max-width: 720px; margin: 0 auto; padding: 24px; }
+  section { padding: 52px 0 8px; }
+  section + section { border-top: 1px solid var(--line); margin-top: 44px; }
+  .kicker { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--forest); }
+  h2 { font-size: 1.5rem; font-weight: 600; margin: 10px 0 18px; text-wrap: balance; }
+  p { max-width: 68ch; margin-bottom: 14px; font-size: 0.98rem; }
+  p.lead { font-size: 1.1rem; }
+  em { font-style: italic; }
+  .pull {
+    font-size: 1.28rem; font-style: italic; color: var(--forest); line-height: 1.45;
+    max-width: 30ch; margin: 30px 0; text-wrap: balance;
+  }
+
+  /* Decision ledger */
+  .ledger { list-style: none; counter-reset: call; margin: 24px 0 10px; }
+  .ledger li { counter-increment: call; padding: 20px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 56px 1fr; gap: 6px 18px; }
+  .ledger li::before {
+    content: counter(call, decimal-leading-zero); grid-row: span 3;
+    font-family: var(--sans); font-size: 1.3rem; font-weight: 200; color: var(--forest); padding-top: 2px;
+  }
+  .ledger .call { font-weight: 700; font-size: 1.02rem; }
+  .ledger .instead { font-family: var(--sans); font-size: 0.82rem; color: var(--muted); }
+  .ledger .instead b { color: var(--terracotta); font-weight: 600; }
+  .ledger .why { font-size: 0.94rem; max-width: 62ch; }
+
+  /* Touchpoint map */
+  .map { margin: 28px 0 10px; }
+  .touch { display: grid; grid-template-columns: 148px 1fr; gap: 0 22px; padding: 16px 0; border-top: 1px solid var(--line); }
+  .touch:first-child { border-top: none; }
+  .touch .who { font-family: var(--sans); font-size: 0.78rem; font-weight: 600; color: var(--forest); letter-spacing: 0.04em; padding-top: 3px; }
+  .touch .sees { font-size: 0.95rem; }
+  .touch .holds { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .touch .holds b { color: var(--ink); font-weight: 600; }
+
+  /* Agent exchange exhibit */
+  .exchange { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 24px 26px; margin: 26px 0; }
+  .exchange-label { font-family: var(--sans); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .bubble { padding: 11px 15px; border-radius: 12px; font-size: 0.92rem; max-width: 92%; margin-bottom: 10px; }
+  .bubble.user { background: var(--forest); color: #f2f0e9; margin-left: auto; border-bottom-right-radius: 4px; width: fit-content; }
+  .bubble.agent { background: #f4f0e7; border-bottom-left-radius: 4px; }
+  .exchange .note { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin-top: 14px; }
+
+  /* Confirm-gate exhibit */
+  .gate { background: var(--paper); border: 1px solid var(--line); border-top: 4px solid var(--terracotta); border-radius: 12px; padding: 20px 24px; margin: 26px 0; max-width: 480px; }
+  .gate h4 { font-size: 1rem; color: var(--terracotta); margin-bottom: 8px; }
+  .gate p { font-size: 0.9rem; margin-bottom: 0; }
+
+  /* Eval ledger */
+  table { border-collapse: collapse; width: 100%; margin: 24px 0 10px; font-family: var(--sans); font-size: 0.88rem; }
+  th { text-align: left; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 14px 10px 0; border-bottom: 1px solid var(--ink); }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.pf { font-variant-numeric: tabular-nums; color: var(--forest); font-weight: 600; white-space: nowrap; }
+
+  .colophon { font-family: var(--sans); font-size: 0.82rem; color: var(--muted); padding: 40px 0 72px; border-top: 1px solid var(--line); margin-top: 44px; }
+  .colophon a { color: var(--forest); }
+  a { color: var(--forest); text-underline-offset: 3px; text-decoration-color: #b9cdc0; }
+
+  @media (max-width: 620px) {
+    .masthead { padding: 48px 20px 40px; }
+    .masthead h1 { font-size: 1.8rem; }
+    .ledger li, .touch { grid-template-columns: 1fr; }
+    .ledger li::before { grid-row: auto; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    section { animation: settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">Pre-read · six minutes · working prototype attached</p>
+    <div class="mast-brand">
+      <span class="mast-mark" aria-hidden="true">
+        <svg viewBox="0 0 56 34" width="56" height="34">
+          <circle cx="37" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#2b4a3e" stroke-width="6.2"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+        </svg>
+      </span>
+      <h1>Hitch</h1>
+    </div>
+    <p class="tagline">Your wedding, without a hitch.</p>
+    <p class="dek">The prototype, and the thinking that produced it. An assistant that knows one wedding completely, acts on it with permission, and tells the truth about which decisions are yours.</p>
+    <p class="byline">Kevin Holland · July 2026 · built for a timed product exercise, shaped to outlive it</p>
+  </div>
+</div>
+
+<main>
+
+<section>
+  <p class="kicker">01 · The exercise</p>
+  <h2>A product losing to general-purpose AI</h2>
+  <p class="lead">The brief: you are the single PM at a wedding SaaS with three static features, guest list, seating charts, to-do tracking. Usage is dropping. Interviews say users get better planning help from ChatGPT. The CEO asks for a diagnosis and a proposal: a 300-word PRD and a prototype real enough to react to.</p>
+  <p>Most answers to this brief bolt a chatbot onto the product. I think that answer loses, and the prototype argues why.</p>
+</section>
+
+<section>
+  <p class="kicker">02 · The read</p>
+  <h2>We store the wedding. We don't advance it.</h2>
+  <p>ChatGPT is genuinely better at wedding advice in general. Competing there is a losing trade. But it cannot see <em>this</em> wedding: who has confirmed, which vendors are booked, what the planner changed yesterday, what a guest-count change does to the caterer's invoice. That state lives with us, and today we do nothing with it.</p>
+  <p class="pull">The moat is not the model. It's the record, and the right to act on it.</p>
+  <p>A wedding is roughly three hundred interdependent decisions made across a year by people who don't share an inbox: the couple, a planner, a dozen vendors. Every change cascades. The product that holds that decision graph, keeps it consistent, and acts on it with permission is doing something a general model structurally cannot. So the move is not a chat tab. It's making the system-of-record generative: ask, get an answer grounded in your actual wedding, approve the action, and watch it write back.</p>
+</section>
+
+<section>
+  <p class="kicker">03 · The calls</p>
+  <h2>Five decisions, and what each one traded away</h2>
+  <ul class="ledger">
+    <li>
+      <span class="call">Own one high-frequency job end to end</span>
+      <span class="instead"><b>instead of</b> a broad AI feature list across all three surfaces</span>
+      <span class="why">The stated problem is re-engagement. The "what's next, do it, mark it done" loop is the only weekly-frequency job in the product. Seating is a more visceral demo and a once-near-the-end task; it became the v2 beat, on purpose.</span>
+    </li>
+    <li>
+      <span class="call">Writeback to real records, behind explicit approval</span>
+      <span class="instead"><b>instead of</b> an advice bot with suggestions the user re-types</span>
+      <span class="why">Acting is the differentiator, and permission is what makes acting trustworthy. Nothing writes without an approval step; high-stakes writes name their downstream cascade before they're confirmed.</span>
+    </li>
+    <li>
+      <span class="call">Cede generic inspiration to ChatGPT, out loud</span>
+      <span class="instead"><b>instead of</b> pretending to compete on taste and trends</span>
+      <span class="why">"What flowers are trending" gets a graceful handoff, not a hallucinated answer. Users trust a tool more when it knows its edges. We keep the grounded-action layer; they keep the mood board.</span>
+    </li>
+    <li>
+      <span class="call">Define the eval set before the build</span>
+      <span class="instead"><b>instead of</b> shipping the demo and hoping</span>
+      <span class="why">Six binary checks, written first, runnable in one command. Three of them are tests ChatGPT cannot pass because it cannot see the data. "I defined wrong before I built" is the discipline; the eval ledger below is the artifact.</span>
+    </li>
+    <li>
+      <span class="call">A deterministic rule engine plays the model in the demo</span>
+      <span class="instead"><b>instead of</b> a live LLM call on stage</span>
+      <span class="why">The model is a commodity and swappable behind the same atomic tools. The part that isn't commodity, the governed write path, the audit trail, the eval gate, is exactly what the demo exercises. Every sentence the agent speaks is interpolated from live rows.</span>
+    </li>
+  </ul>
+</section>
+
+<section>
+  <p class="kicker">04 · The interaction</p>
+  <h2>Six touchpoints, each with a guarantee</h2>
+  <div class="map">
+    <div class="touch">
+      <span class="who">The couple asks</span>
+      <div><p class="sees">"What's left before the wedding?"</p>
+      <p class="holds"><b>Guarantee:</b> the answer lists only tasks open in this wedding's record, with computed days-late. Nothing invented, ever.</p></div>
+    </div>
+    <div class="touch">
+      <span class="who">The agent proposes</span>
+      <div><p class="sees">An action card: the drafted vendor email, naming the real florist and the real date, with Approve and Edit.</p>
+      <p class="holds"><b>Guarantee:</b> a footprint line under every card states what it writes, whether it's reversible, and which records ground it.</p></div>
+    </div>
+    <div class="touch">
+      <span class="who">The couple approves</span>
+      <div><p class="sees">The row flips, the timeline re-renders, an audit entry lands.</p>
+      <p class="holds"><b>Guarantee:</b> approval is the only write path. Blast radius equals the declared writes; nothing else changes.</p></div>
+    </div>
+    <div class="touch">
+      <span class="who">The gate holds</span>
+      <div><p class="sees">A high-stakes change (an RSVP decline that moves the caterer's headcount) stops at a confirm dialog naming the cascade.</p>
+      <p class="holds"><b>Guarantee:</b> enforced server-side, not just in the UI. Cancel leaves every record untouched.</p></div>
+    </div>
+    <div class="touch">
+      <span class="who">The planner audits</span>
+      <div><p class="sees">A read-only lens on the same records: every change, who made it, when, plus a trust stat, writebacks reversed.</p>
+      <p class="holds"><b>Guarantee:</b> the human planner stays the accountable owner of the record. Multiplayer is the default, not a feature.</p></div>
+    </div>
+    <div class="touch">
+      <span class="who">The agent declines</span>
+      <div><p class="sees">Taste questions get an honest handoff to general tools. Judgment questions get framed and handed back.</p>
+      <p class="holds"><b>Guarantee:</b> no write, no false cheer, no pretending the record can answer what it can't.</p></div>
+    </div>
+  </div>
+
+  <div class="gate">
+    <h4>This changes shared records</h4>
+    <p>Record decline (−2 guests) and update caterer headcount. This changes: guest count 120 → 118 · Lowcountry Catering headcount · your seating plan. Reversible: yes.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">05 · The agent</p>
+  <h2>Steady counsel, not a cheerleader</h2>
+  <p>Every planning bot in this space is sycophantic. Ask one whether to cut the guest list and it says "great idea!" and generates a listicle. That's worse than useless during the most emotionally loaded project most couples ever run together.</p>
+  <p>This agent holds three lines. It <em>executes</em> what the record supports: mark it done, draft the email. It <em>frames</em> what the record can inform but not decide: here is the cascade, here is the math I can and cannot do, the call is yours. And it <em>declines</em> what isn't its business: who sits with your mother. The register throughout is the planner who has done two hundred weddings, calm, specific, honest about weight. Grounding turns out to be emotional regulation too: "here's the actual size of what's left" does more for an overwhelmed couple at 10pm than any amount of encouragement.</p>
+
+  <div class="exchange">
+    <p class="exchange-label">Live exchange · from the working prototype, verbatim</p>
+    <div class="bubble user">Should we cut the guest list?</div>
+    <div class="bubble agent">Here's what the record can tell you: you're at 120 guests, 15 weeks out, with 6 tasks open. Cutting guests moves your catering headcount, seating, and welcome bags; it doesn't move the florist or the DJ. What it can't tell you is who matters, that call is yours and your partner's, and I won't pretend otherwise. If you add per-head costs to the record, I'll model the actual savings before you decide.</div>
+    <p class="note">No action card is offered. This response is a tested behavior: eval 6 fails the build if the agent drafts a write for a judgment call, drops the real guest count, or slips into false cheer.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">06 · Multiplayer</p>
+  <h2>Nobody plans a wedding alone. The product knows it.</h2>
+  <p>The couple engages daily; the planner is paid to be accountable; vendors bill against the state both of them touch. No single user owns the wedding, which is exactly why the shared record is defensible: ChatGPT can advise any one of them, but it cannot hold the thing they share.</p>
+  <p>So v1 is deliberately one surface with two lenses. Couple actions write to the record the planner audits; the audit trail makes the agent's hand visible to every party; high-stakes changes name whom else they affect before they land. Commercially the same seam does the work: the couple side stays free and forms the habit, and the planner's dependence on a trustworthy record is the paid tier, multi-wedding console, client seats, the audit view. The free side is the wedge. The record is the moat.</p>
+</section>
+
+<section>
+  <p class="kicker">07 · Measured</p>
+  <h2>Defined before the build, runnable in one command</h2>
+  <p>Primary metric: weekly active planning sessions per couple. Counter-metric: writebacks the user reverses or edits, trust, keep it low. And six binary evals, written before the prototype, each one a live check against real records:</p>
+  <table>
+    <tr><th>#</th><th>Check</th><th>Holds</th></tr>
+    <tr><td class="pf">1</td><td>"What's left?" returns only this wedding's open tasks. Nothing invented.</td><td class="pf">pass</td></tr>
+    <tr><td class="pf">2</td><td>The drafted email names the actual vendor and the real wedding date, from rows.</td><td class="pf">pass</td></tr>
+    <tr><td class="pf">3</td><td>Approve flips the real record; nothing outside the declared writes changes.</td><td class="pf">pass</td></tr>
+    <tr><td class="pf">4</td><td>No write ever happens without approval; high-stakes writes require the cascade confirm, enforced server-side.</td><td class="pf">pass</td></tr>
+    <tr><td class="pf">5</td><td>Ungroundable asks hand off. No hallucinated writeback.</td><td class="pf">pass</td></tr>
+    <tr><td class="pf">6</td><td>Judgment calls get framed and handed back: grounded numbers, named cascade, no write, no false cheer.</td><td class="pf">pass</td></tr>
+  </table>
+  <p>Expansion follows a graduation path, not enthusiasm: contain to one job, instrument everything, verify against the evals, prove the conditions under which it holds, then widen, seating v2, registry v3, each behind the same gate. A feature doesn't earn autonomy because it demos well. It earns it when we know the conditions under which it breaks.</p>
+</section>
+
+<section>
+  <p class="kicker">08 · Horizons</p>
+  <h2>Win the wedding, keep the household</h2>
+  <p>Upstream: the proposal-to-planning gap, budget architecture from day one, so the record starts before the chaos does. Downstream: the registry is a grounded-commerce surface, the agent knows the gift gaps and the guest list, so completion nudges and thank-you tracking are writeback actions like any other, not ads. Then the anniversary, the new home, the next shared project. The couple's shared record doesn't expire at the altar; the product shouldn't either.</p>
+</section>
+
+<div class="colophon">
+  <p>Working prototype: zero-dependency Node (node:http + node:sqlite), one command to run, six evals in one more. Built July 2026 for a timed product exercise; intended for open source, in the spirit of the <a href="https://github.com/hollandkevint/thinkhaven-method-kit">ThinkHaven Method Kit</a>, where the decision techniques the agent borrows (assumption mapping as a write gate, confidence calibration, anti-sycophancy) are already public. Written and built by Kevin Holland.</p>
+</div>
+
+</main>
+</body>
+</html>
