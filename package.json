@@ -1,0 +1,12 @@
+{
+  "name": "hitch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wedding copilot demo — zero-dependency Node + node:sqlite.",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

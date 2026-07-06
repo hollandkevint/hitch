@@ -250,6 +250,9 @@ function insertTask({ title, due_date = '2026-09-01', owner = 'couple', status =
 }
 
 if (require.main === module) {
-  server.listen(3000, '127.0.0.1', () => console.log('Hitch → http://localhost:3000'));
+  // ponytail: bind the host-assigned PORT on all interfaces (0.0.0.0) so Railway/Render
+  // can route to it; loopback-only bind fails the platform healthcheck. Local still works.
+  const port = process.env.PORT || 3000;
+  server.listen(port, () => console.log(`Hitch → http://localhost:${port}`));
 }
 module.exports = { server, copilot, approveAction, seed, getWedding, getTasks, getAudit, insertTask };
