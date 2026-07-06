@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-06",
+  "title": "Design System: Hitch",
+  "extensions": {
+    "colorMeta": {
+      "forest":        { "role": "primary",  "displayName": "Pressed Forest",     "canonical": "oklch(37% 0.045 160)", "tonalRamp": ["oklch(20% 0.03 160)","oklch(27% 0.04 160)","oklch(33% 0.045 160)","oklch(37% 0.045 160)","oklch(50% 0.04 160)","oklch(66% 0.03 160)","oklch(82% 0.02 160)","oklch(94% 0.012 160)"] },
+      "forest-deep":   { "role": "primary",  "displayName": "Deep Forest",        "canonical": "oklch(32% 0.04 160)" },
+      "forest-soft":   { "role": "primary",  "displayName": "Forest Wash",        "canonical": "oklch(94% 0.012 160)" },
+      "terracotta":    { "role": "secondary","displayName": "Consequence Terracotta", "canonical": "oklch(56% 0.13 45)", "tonalRamp": ["oklch(30% 0.08 45)","oklch(40% 0.11 45)","oklch(48% 0.125 45)","oklch(56% 0.13 45)","oklch(66% 0.11 45)","oklch(78% 0.07 45)","oklch(88% 0.04 55)","oklch(93% 0.02 55)"] },
+      "terracotta-soft":{ "role": "secondary","displayName": "Terracotta Wash",   "canonical": "oklch(93% 0.02 55)" },
+      "ivory":         { "role": "neutral",  "displayName": "Cotton Ivory",       "canonical": "oklch(97.5% 0.008 85)", "tonalRamp": ["oklch(26% 0.015 155)","oklch(40% 0.01 90)","oklch(53% 0.008 90)","oklch(70% 0.01 88)","oklch(83% 0.012 86)","oklch(90% 0.012 85)","oklch(97.5% 0.008 85)","oklch(99.3% 0.006 90)"] },
+      "paper":         { "role": "neutral",  "displayName": "Bright Paper",       "canonical": "oklch(99.3% 0.006 90)" },
+      "bot-surface":   { "role": "neutral",  "displayName": "Bot Paper",          "canonical": "oklch(95% 0.01 88)" },
+      "ink":           { "role": "neutral",  "displayName": "Forest Ink Text",    "canonical": "oklch(26% 0.015 155)" },
+      "muted":         { "role": "neutral",  "displayName": "Ash Muted",          "canonical": "oklch(53% 0.008 90)" },
+      "line":          { "role": "neutral",  "displayName": "Deckle Line",        "canonical": "oklch(90% 0.012 85)" },
+      "on-forest":     { "role": "neutral",  "displayName": "Warm White",         "canonical": "oklch(99% 0.004 90)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Product name and the couple's masthead. One per screen." },
+      "title":   { "displayName": "Title",   "purpose": "Section and action-card headings. Georgia serif." },
+      "body":    { "displayName": "Body",    "purpose": "Timeline rows, chat, dialog copy. System sans, 65-75ch." },
+      "aside":   { "displayName": "Aside",   "purpose": "Vendor names and record asides. Italic Georgia signals a value from the record." },
+      "label":   { "displayName": "Label",   "purpose": "Sub-labels and badges. Uppercase, tracked, system sans." }
+    },
+    "shadows": [
+      { "name": "resting-hairline",  "value": "0 1px 2px rgba(58, 50, 38, 0.04)",  "purpose": "The barely-there seat under section panels. Grounds without lifting." },
+      { "name": "consequence-lift",  "value": "0 12px 40px rgba(38, 48, 43, 0.25)", "purpose": "The confirm dialog only. The one true shadow in the product." },
+      { "name": "scrim",             "value": "background: rgba(38, 48, 43, 0.42)",  "purpose": "Forest-tinted page scrim behind the confirm gate." }
+    ],
+    "motion": [
+      { "name": "settle", "value": "150-200ms ease-out", "purpose": "Row state changes fade and settle. No bounce, no elastic, no confetti burst on approve." }
+    ],
+    "breakpoints": [
+      { "name": "stack", "value": "820px", "purpose": "Two-column main collapses to one; header padding tightens." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Approve, Ask, active view-toggle. The pressed-ink action.",
+      "html": "<button class=\"ds-btn-primary\">Approve</button>",
+      "css": ".ds-btn-primary { background: #2b4a3e; color: #fdfcf9; border: none; border-radius: 8px; padding: 9px 20px; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 0.88rem; cursor: pointer; transition: background 180ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-primary:hover { background: #233d33; } .ds-btn-primary:focus-visible { outline: 2px solid #e8efe9; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Edit, Cancel, inactive toggle. Quiet paper-on-line.",
+      "html": "<button class=\"ds-btn-secondary\">Edit</button>",
+      "css": ".ds-btn-secondary { background: #fffdf9; color: #26302b; border: 1px solid #e9e2d6; border-radius: 8px; padding: 9px 20px; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 0.88rem; cursor: pointer; transition: border-color 180ms ease-out; } .ds-btn-secondary:hover { border-color: #2b4a3e; } .ds-btn-secondary:focus-visible { outline: 2px solid #e8efe9; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "The confirm-gate commit only. Terracotta means consequence.",
+      "html": "<button class=\"ds-btn-danger\">Yes, make the change</button>",
+      "css": ".ds-btn-danger { background: #b4532a; color: #fdfcf9; border: none; border-radius: 8px; padding: 9px 18px; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 0.88rem; cursor: pointer; transition: background 180ms ease-out; } .ds-btn-danger:hover { background: #9c451f; } .ds-btn-danger:focus-visible { outline: 2px solid #f7e9e1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ask Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "The in-context ask field. Warm paper, quiet forest focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Ask Hitch\">",
+      "css": ".ds-input { background: #fffdf9; color: #26302b; border: 1px solid #e9e2d6; border-radius: 10px; padding: 11px 14px; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 0.91rem; width: 100%; } .ds-input::placeholder { color: #7d7a72; } .ds-input:focus { outline: 2px solid #e8efe9; border-color: #2b4a3e; }"
+    },
+    {
+      "name": "Action Card",
+      "kind": "card",
+      "refersTo": "action-card",
+      "description": "The agent proposing an action: forest-wash ground, serif heading, drafted-content well, footprint line.",
+      "html": "<div class=\"ds-action-card\"><h4>Draft the florist follow-up</h4><pre class=\"ds-draft\">Hi Petal &amp; Stem Florals, confirming our October 17, 2026 order...</pre><div class=\"ds-footprint\">Writes: mark task done · Reversible: yes · Grounded in: 2 records</div></div>",
+      "css": ".ds-action-card { background: #e8efe9; border: 1px solid #cddbd2; border-radius: 12px; padding: 16px 18px; } .ds-action-card h4 { font-family: Georgia, 'Times New Roman', serif; font-size: 0.95rem; font-weight: 600; color: #26302b; margin: 0 0 10px; } .ds-draft { font-family: Georgia, 'Times New Roman', serif; font-size: 0.88rem; background: #fffdf9; border: 1px solid #e9e2d6; border-radius: 8px; padding: 12px 14px; line-height: 1.55; white-space: pre-wrap; color: #26302b; margin: 0 0 10px; } .ds-footprint { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 0.72rem; letter-spacing: 0.04em; color: #7d7a72; }"
+    },
+    {
+      "name": "Confirm Gate",
+      "kind": "custom",
+      "refersTo": "button-danger",
+      "description": "The signature moment. Terracotta top rule, named cascade, consequence lift. Governance made visible before a high-stakes write.",
+      "html": "<div class=\"ds-gate\"><h3>This changes shared records</h3><p class=\"ds-gate-intro\">Recording the Hendersons' decline updates:</p><ul class=\"ds-cascade\"><li>Guest count 120 to 118</li><li>Lowcountry Catering headcount</li><li>Your seating plan</li></ul><p class=\"ds-reversible\">Reversible: yes</p><div class=\"ds-gate-actions\"><button class=\"ds-btn-secondary\">Cancel</button><button class=\"ds-btn-danger\">Yes, make the change</button></div></div>",
+      "css": ".ds-gate { background: #fffdf9; border-radius: 14px; border-top: 4px solid #b4532a; box-shadow: 0 12px 40px rgba(38,48,43,0.25); padding: 26px 28px; max-width: 440px; } .ds-gate h3 { font-family: Georgia, 'Times New Roman', serif; color: #b4532a; font-size: 1.05rem; margin: 0 0 10px; } .ds-gate-intro { font-family: -apple-system, sans-serif; font-size: 0.9rem; color: #26302b; margin: 0 0 10px; } .ds-cascade { list-style: none; margin: 0 0 14px; padding: 0; } .ds-cascade li { position: relative; font-family: -apple-system, sans-serif; font-size: 0.86rem; color: #26302b; padding: 8px 0 8px 20px; border-bottom: 1px solid #e9e2d6; } .ds-cascade li:last-child { border-bottom: none; } .ds-cascade li::before { content: ''; position: absolute; left: 4px; top: 15px; width: 5px; height: 5px; border-radius: 50%; background: #b4532a; } .ds-reversible { font-family: -apple-system, sans-serif; font-size: 0.82rem; color: #7d7a72; margin: 0 0 18px; } .ds-gate-actions { display: flex; gap: 10px; justify-content: flex-end; }"
+    },
+    {
+      "name": "Overdue Pill",
+      "kind": "chip",
+      "refersTo": "overdue-pill",
+      "description": "Late marker. Terracotta wash, never bare red.",
+      "html": "<span class=\"ds-overdue\">6d late</span>",
+      "css": ".ds-overdue { display: inline-block; background: #f7e9e1; color: #b4532a; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 600; font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; }"
+    },
+    {
+      "name": "Agent Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Marks Hitch's own surfaces. Forest wash, tracked label.",
+      "html": "<span class=\"ds-badge\">knows your wedding</span>",
+      "css": ".ds-badge { display: inline-block; background: #e8efe9; color: #2b4a3e; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 600; font-size: 0.68rem; letter-spacing: 0.03em; padding: 3px 10px; border-radius: 999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Letterpress Desk",
+    "overview": "Hitch is editorial wedding stationery operated like software. A letterpress studio that also ships a real tool: warm cotton paper stock, forest-green ink pressed into it, and a single terracotta stamp reserved for the one thing on the page that needs care. The surface is calm and unhurried because the person using it is not. A couple opens this at 10pm, overwhelmed, and the interface reads as steady counsel, not another app shouting for attention. The product holds the couple's real, shared record and acts on it with permission, so the design's whole job is to make that record legible and make every action honest about what it touches. It is never generic SaaS AI and never bridal saccharine. It sits deliberately between craft and restraint: serif where a human authored something, clean sans where the machine is speaking, color so sparing that when terracotta appears you already know something has a consequence.",
+    "keyCharacteristics": [
+      "Warm, tinted neutrals only. No pure black, no pure white, ever.",
+      "Two typographic voices: Georgia serif for authored and record content, system sans for machine chrome.",
+      "Forest is the single working accent. Terracotta means consequence, never decoration.",
+      "Flat at rest. The only real lift is the confirm dialog, the moment the agent is about to change shared reality.",
+      "Calm over cheerful. The interface never performs enthusiasm."
+    ],
+    "rules": [
+      { "name": "The One Ink Rule", "body": "Forest is the only working accent, and it covers under 10% of any screen. Its restraint is what makes an active state, an agent surface, or an approve button read instantly. Do not spread it.", "section": "colors" },
+      { "name": "The Terracotta-Is-Consequence Rule", "body": "Terracotta is forbidden as decoration. It appears only where something is overdue, high-stakes, or about to be written to shared state. If terracotta is on the screen, the user should be able to point at the thing that has a consequence.", "section": "colors" },
+      { "name": "The Two-Voice Rule", "body": "Georgia serif is for authored and record content; system sans is for machine chrome. Never swap them. A button is never serif. A drafted email is never sans.", "section": "typography" },
+      { "name": "The Flat-Until-Consequence Rule", "body": "Surfaces are flat at rest, seated on a hairline. The single moment that earns a real shadow is the confirm gate, because the one time the interface should feel like it is rising above everything is the moment the agent is about to change shared reality.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep forest under 10% of any screen. Its rarity is what makes it mean action.",
+      "Do reserve terracotta strictly for consequence: overdue, high-stakes, writes to shared state.",
+      "Do hold the two type voices apart: Georgia for record and authored content, system sans for chrome.",
+      "Do keep surfaces flat on a hairline, and spend the one real shadow on the confirm gate.",
+      "Do show the footprint (writes, reversible, grounded-in) under every agent action.",
+      "Do name the full cascade in the confirm gate before any high-stakes write.",
+      "Do tint every neutral toward the brand hue; keep the paper warm."
+    ],
+    "donts": [
+      "Don't use generic SaaS AI cues: no purple, no gradients anywhere, no sparkle emoji, no 'Ask me anything!'",
+      "Don't go bridal saccharine: no blush pink, no script fonts, no confetti, no hearts.",
+      "Don't render the agent as a full-screen chat tab. Hitch lives inside the planning surface or it is not the product.",
+      "Don't let the agent perform enthusiasm: no exclamation marks, no false cheer, no validation theater.",
+      "Don't put emoji in agent speech; sparse typographic symbols are the only exception.",
+      "Don't use #000 or #fff. The lightest ink-on-color is Warm White (#fdfcf9).",
+      "Don't use a side-stripe accent border. The confirm gate's terracotta rule is a full-width top rule, on purpose.",
+      "Don't use terracotta as decoration. If it is on screen, something has a consequence."
+    ]
+  }
+}
