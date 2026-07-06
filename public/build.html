@@ -139,8 +139,8 @@
 <section id="process">
   <p class="kicker">01 · Process</p>
   <h2>Build first, evaluate from the build, then write the spec</h2>
-  <p class="lead">I didn't write a long spec and hand it off. I wrote the evals first, built the working thing, and evaluated from it. When the build is nearly free, the prototype becomes the specification, and the eval set becomes the definition of correct.</p>
-  <p>The sequence, in order: define what the agent must <em>never</em> do (the six binary evals) before a line of product code; build a real, running system, zero dependencies, so the mechanics are inspectable end to end; run the evals against the real server logic, not mocks; then write the 300-word PRD from a thing that already works. Prototyping-as-specification, not spec-then-prototype.</p>
+  <p class="lead">I didn't write a long spec and hand it off. I wrote five evals before the product code, built the working thing, and evaluated from it — and error analysis during the build grew the set to seven. When the build is nearly free, the prototype becomes the specification, and the eval set becomes the definition of correct.</p>
+  <p>The sequence, in order: define what the agent must <em>never</em> do (five binary evals, written first) before a line of product code; build a real, running system, zero dependencies, so the mechanics are inspectable end to end; run the evals against the real server logic, not mocks, and let error analysis grow the set (a steady-counsel check and an injection-safety check earned their way in during the build); then write the 300-word PRD from a thing that already works. Prototyping-as-specification, not spec-then-prototype.</p>
   <p class="pull">The eval set is the spec. I defined wrong before I built.</p>
   <p>Tooling was Claude Code driving a zero-dependency Node app, <code>node:http</code> plus <code>node:sqlite</code>. Zero deps was a deliberate constraint: every moving part, the tools, the gate, the audit trail, the evals, is legible in one file with nothing hidden behind a framework. The governance is the product, so the governance had to be readable.</p>
 </section>
@@ -148,7 +148,7 @@
 <section id="architecture">
   <p class="kicker">02 · Architecture</p>
   <h2>Draft and commit are separate paths. The write only fires through approval.</h2>
-  <p>The whole safety story is one structural choice: the thing that proposes an action is incapable of performing it. Proposing and writing are different endpoints, and the model, or the rule engine standing in for it, never touches the write path.</p>
+  <p>The whole safety story is one design choice, enforced in code: the thing that proposes an action never performs it. Proposing and committing are separate endpoints, and approval is the only path that mutates the live record — the propose path contains no write statements. (A demo reset endpoint reseeds the fixture; it's furniture I'd delete in production, and true structural separation — the propose path running without write permissions at all — is on the hardening list below.)</p>
 
   <div class="flow">
     <div class="step">
@@ -206,14 +206,14 @@
   <p>There is no generic write endpoint to call. The only mutation path is <code>/api/approve</code>, and for high-stakes actions it checks <code>confirmed === true</code> and refuses server-side otherwise. The confirm dialog is not UI theater.</p>
 
   <h3>Audit trail and the counter-metric</h3>
-  <p>Every commit writes an <code>audit_log</code> row, actor, action, timestamp, and the planner's read-only lens surfaces "writebacks reversed." If the agent starts acting wrongly, that number climbs and you see it. Trust is measured, not asserted.</p>
+  <p>Every commit writes an <code>audit_log</code> row — actor, action, timestamp — and the planner's read-only lens shows all of it. "Writebacks reversed" is the trust counter-metric to instrument first: if the agent starts acting wrongly, that number climbs and you see it. The trail makes every action attributable; the counter-metric makes trust measurable.</p>
 
   <h3>Eval set as the release gate</h3>
-  <p>Six binary checks (seven with an injection-safety case) run in one command. Three are things a general model structurally cannot pass because it can't see the record. When there's a live model behind the tools, these same evals become the regression gate, promote a candidate only if it passes without degrading the held-out cases. That's the difference between an agent that demos well and one that earns autonomy.</p>
+  <p>Seven binary checks run in one command — five specced before the build, two added from error analysis during it. Three are things a general model structurally cannot pass because it can't see the record. When there's a live model behind the tools, the eval <em>contract</em> becomes the regression gate: the assertions get rewritten from template checks to behavior checks, but what counts as wrong doesn't change, and a candidate model is promoted only if it passes without degrading the held-out cases. That's the difference between an agent that demos well and one that earns autonomy.</p>
 
   <div class="callout">
     <p class="lbl">Where I'd harden it for production</p>
-    <p>Wrap multi-row writes in a transaction (the approve loop runs a couple of synchronous statements; I'd make that atomic). Add per-actor auth so the audit trail is trustworthy across parties. Move <code>pendingActions</code> from an in-memory Map to durable storage so a restart doesn't drop a draft mid-approval. And treat PII in the record as a first-class access-control boundary, not a column. I know where the seams are because I built it, not spec'd it.</p>
+    <p>Wrap multi-row writes in a transaction (the approve loop runs a couple of synchronous statements; I'd make that atomic). Add per-actor auth plus idempotency keys, so the audit trail is trustworthy across parties and a replayed approval can't double-apply. Re-validate live state at commit time, not just at draft time, and carry the user's edits to a draft through the approve payload. Move <code>pendingActions</code> from an in-memory Map to durable storage so a restart doesn't drop a draft mid-approval. Delete the demo reset endpoint, and run the propose path without write permissions at all. And treat PII in the record as a first-class access-control boundary, not a column. I know where the seams are because I built it, not spec'd it.</p>
   </div>
 </section>
 

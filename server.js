@@ -107,7 +107,7 @@ function copilot(message) {
     const florist = overdue.find(t => /florist/i.test(t.title));
     const walkthrough = open.find(t => /walkthrough/i.test(t.title));
     if (florist && walkthrough) {
-      reply += `\n\nThe ${florist.vendor} deposit is ${daysLate(florist)} days late — want me to draft the follow-up and mark the venue walkthrough done? (You did it yesterday.)`;
+      reply += `\n\nThe ${florist.vendor} deposit is ${daysLate(florist)} days late — want me to draft the follow-up? I can also mark the venue walkthrough done if that's already happened.`;
       action = draftAction(
         'followup+complete',
         `Draft follow-up to ${florist.vendor} + mark "${walkthrough.title}" done`,
@@ -137,8 +137,10 @@ function copilot(message) {
     return { reply: `I don't see "${needle}" in ${w.couple}'s open tasks, so I won't touch the record. Here's what IS open: ${open.map(t => t.title).join('; ')}.`, action: null };
   }
 
-  // Intent: high-stakes multi-party write — RSVP decline changes the caterer headcount
-  if (/henderson|declin|guest count|seating|rsvp.*(no|decline)/.test(m)) {
+  // Intent: high-stakes multi-party write — RSVP decline changes the caterer headcount.
+  // Deliberately narrow: only decline-shaped language drafts this write. Mentioning a
+  // guest, a table, or the count is not a decline.
+  if (/declin|rsvp.*\b(no|out|regret)/.test(m)) {
     const caterer = getTasks().find(t => /cater/i.test(t.vendor || ''))?.vendor || 'your caterer';
     return {
       reply: `That changes your guest count from ${w.guest_count} to ${w.guest_count - 2}, which changes the headcount ${caterer} bills against. I can record it, but this one needs your explicit confirmation.`,
@@ -173,9 +175,19 @@ function copilot(message) {
     };
   }
 
+  // Grounded lookup — answer simple record questions directly from the rows. No action.
+  if (/how many (guests|people)|guest count|guest total/.test(m)) {
+    const rsvp = open.find(t => /rsvp/i.test(t.title));
+    return {
+      reply: `${w.guest_count} guests on the list for ${fmtDate(w.wedding_date)}.` +
+        (rsvp ? ` One caveat from the record: "${rsvp.title}" is still open, so that number can move.` : ''),
+      action: null,
+    };
+  }
+
   // Ungroundable — hand off, never invent, never write (eval 5)
   return {
-    reply: `That's a taste question, not something in ${w.couple}'s wedding record — I only act on what's actually in your plan. For inspiration, a general tool like ChatGPT or Pinterest will do better. Ask me anything about YOUR wedding: what's left, what's late, or tell me to mark something done.`,
+    reply: `That one isn't in ${w.couple}'s wedding record yet, and I only act on what's actually in your plan. For general inspiration, a tool like ChatGPT or Pinterest will do better. Ask me anything the record can answer: what's left, what's late, how many guests — or tell me to mark something done.`,
     action: null,
   };
 }

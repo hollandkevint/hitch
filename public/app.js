@@ -133,7 +133,7 @@ function renderCascade(action) {
 
   const rev = document.createElement('p');
   rev.className = 'cascade-reversible';
-  rev.textContent = action.reversible ? 'Reversible: yes. You can undo this from the timeline.'
+  rev.textContent = action.reversible ? 'Reversible: yes — recording an offsetting change restores it.'
                                       : 'Reversible: no. This cannot be undone.';
   slot.appendChild(rev);
 }

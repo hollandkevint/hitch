@@ -157,7 +157,7 @@
     <li>
       <span class="call">Define the eval set before the build</span>
       <span class="instead"><b>instead of</b> shipping the demo and hoping</span>
-      <span class="why">Six binary checks, written first, runnable in one command. Three of them are tests ChatGPT cannot pass because it cannot see the data. "I defined wrong before I built" is the discipline; the eval ledger below is the artifact.</span>
+      <span class="why">Seven binary checks — five written before the build, two added from error analysis during it — runnable in one command. Three of them are tests ChatGPT cannot pass because it cannot see the data. Defining wrong before building is the discipline; the eval ledger below is the artifact.</span>
     </li>
     <li>
       <span class="call">A deterministic rule engine plays the model in the demo</span>
@@ -179,7 +179,7 @@
     <div class="touch">
       <span class="who">The agent proposes</span>
       <div><p class="sees">An action card: the drafted vendor email, naming the real florist and the real date, with Approve and Edit.</p>
-      <p class="holds"><b>Guarantee:</b> a footprint line under every card states what it writes, whether it's reversible, and which records ground it.</p></div>
+      <p class="holds"><b>Guarantee:</b> every action card declares what it will write before you approve — and a shared-state change names its full downstream cascade first.</p></div>
     </div>
     <div class="touch">
       <span class="who">The couple approves</span>
@@ -193,7 +193,7 @@
     </div>
     <div class="touch">
       <span class="who">The planner audits</span>
-      <div><p class="sees">A read-only lens on the same records: every change, who made it, when, plus a trust stat, writebacks reversed.</p>
+      <div><p class="sees">A read-only lens on the same records: every change, who made it, when.</p>
       <p class="holds"><b>Guarantee:</b> the human planner stays the accountable owner of the record. Multiplayer is the default, not a feature.</p></div>
     </div>
     <div class="touch">
@@ -216,7 +216,7 @@
   <p>This agent holds three lines. It <em>executes</em> what the record supports: mark it done, draft the email. It <em>frames</em> what the record can inform but not decide: here is the cascade, here is the math I can and cannot do, the call is yours. And it <em>declines</em> what isn't its business: who sits with your mother. The register throughout is the planner who has done two hundred weddings, calm, specific, honest about weight. Grounding turns out to be emotional regulation too: "here's the actual size of what's left" does more for an overwhelmed couple at 10pm than any amount of encouragement.</p>
 
   <div class="exchange">
-    <p class="exchange-label">Live exchange · from the working prototype, verbatim</p>
+    <p class="exchange-label">Live exchange · from the working prototype</p>
     <div class="bubble user">Should we cut the guest list?</div>
     <div class="bubble agent">Here's what the record can tell you: you're at 120 guests, 15 weeks out, with 6 tasks open. Cutting guests moves your catering headcount, seating, and welcome bags; it doesn't move the florist or the DJ. What it can't tell you is who matters, that call is yours and your partner's, and I won't pretend otherwise. If you add per-head costs to the record, I'll model the actual savings before you decide.</div>
     <p class="note">No action card is offered. This response is a tested behavior: eval 6 fails the build if the agent drafts a write for a judgment call, drops the real guest count, or slips into false cheer.</p>
@@ -233,7 +233,7 @@
 <section>
   <p class="kicker">07 · Measured</p>
   <h2>Defined before the build, runnable in one command</h2>
-  <p>Primary metric: weekly active planning sessions per couple. Counter-metric: writebacks the user reverses or edits, trust, keep it low. And six binary evals, written before the prototype, each one a live check against real records:</p>
+  <p>Primary metric: weekly active planning sessions per couple. Counter-metric: writebacks the user reverses or edits, trust, keep it low. And seven binary evals — five written before the prototype, two added from error analysis during the build — each one a live check against real records:</p>
   <table>
     <tr><th>#</th><th>Check</th><th>Holds</th></tr>
     <tr><td class="pf">1</td><td>"What's left?" returns only this wedding's open tasks. Nothing invented.</td><td class="pf">pass</td></tr>
@@ -242,6 +242,7 @@
     <tr><td class="pf">4</td><td>No write ever happens without approval; high-stakes writes require the cascade confirm, enforced server-side.</td><td class="pf">pass</td></tr>
     <tr><td class="pf">5</td><td>Ungroundable asks hand off. No hallucinated writeback.</td><td class="pf">pass</td></tr>
     <tr><td class="pf">6</td><td>Judgment calls get framed and handed back: grounded numbers, named cascade, no write, no false cheer.</td><td class="pf">pass</td></tr>
+    <tr><td class="pf">7</td><td>Markup inside a record round-trips as text; every place the record renders escapes it.</td><td class="pf">pass</td></tr>
   </table>
   <p>Expansion follows a graduation path, not enthusiasm: contain to one job, instrument everything, verify against the evals, prove the conditions under which it holds, then widen, seating v2, registry v3, each behind the same gate. A feature doesn't earn autonomy because it demos well. It earns it when we know the conditions under which it breaks.</p>
 </section>
@@ -253,7 +254,7 @@
 </section>
 
 <div class="colophon">
-  <p>Working prototype: zero-dependency Node (node:http + node:sqlite), one command to run, six evals in one more. Built July 2026 for a timed product exercise; intended for open source, in the spirit of the <a href="https://github.com/hollandkevint/thinkhaven-method-kit">ThinkHaven Method Kit</a>, where the decision techniques the agent borrows (assumption mapping as a write gate, confidence calibration, anti-sycophancy) are already public. Written and built by Kevin Holland.</p>
+  <p>Working prototype: zero-dependency Node (node:http + node:sqlite), one command to run, seven evals in one more. Built July 2026 for a timed product exercise; intended for open source, in the spirit of the <a href="https://github.com/hollandkevint/thinkhaven-method-kit">ThinkHaven Method Kit</a>, where the decision techniques the agent borrows (assumption mapping as a write gate, confidence calibration, anti-sycophancy) are already public. Written and built by Kevin Holland.</p>
 </div>
 
 </main>
