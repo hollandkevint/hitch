@@ -153,7 +153,11 @@
       <span class="why"><b>instead of</b> a single <code>plan_wedding</code> call. Small operations keep the blast radius declared and testable: approve flips exactly the declared rows and nothing else. It's also what makes the model swap-in trivial, the tool contract doesn't change.</span>
     </li>
     <li>
-      <span class="call">Ground at request time; never cache state</span>
+
+      <span class="call">Prototype in Lovable first; ship the demo as a stateful Node app</span>
+      <span class="why"><b>instead of</b> staying in the no-code mock. Lovable was the right first move &mdash; screens to react to in minutes &mdash; but the product&rsquo;s core claim is a writeback that survives a refresh, and a mock holding component state can&rsquo;t prove that. So the demo moved to a zero-dependency Node app with <code>node:sqlite</code>, deployed on Railway, where the hero beat is a real row flipping. The mock&rsquo;s job was to be discarded.</span>
+    </li>
+    <li>      <span class="call">Ground at request time; never cache state</span>
       <span class="why"><b>instead of</b> holding a snapshot. <code>copilot()</code> re-queries every turn, so it's structurally grounded, not accurate-by-luck. It cannot name a vendor or date that isn't in the record. Fluency on data it can't see is the failure mode, not the feature.</span>
     </li>
   </ul>
