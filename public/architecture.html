@@ -128,6 +128,49 @@ body.js-reveal section.in { opacity: 1; transform: none; }
 }
 nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </style>
+<style id="arch-diagram">
+.arch-fig { margin: 28px 0 10px; font-family: var(--sans); }
+.arch-controls { display: flex; gap: 8px; margin-bottom: 14px; }
+.arch-btn { font-family: var(--sans); font-size: 0.78rem; font-weight: 600; color: var(--muted);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 6px 15px; cursor: pointer;
+  transition: background .16s var(--ease), color .16s var(--ease), border-color .16s var(--ease); }
+.arch-btn:hover { border-color: var(--forest); }
+.arch-btn.active { color: #fdfcf9; background: var(--forest); border-color: var(--forest); }
+.arch-btn[data-mode="refused"].active { background: var(--terracotta); border-color: var(--terracotta); }
+.diagram { width: 100%; height: auto; display: block; background: var(--paper);
+  border: 1px solid var(--line); border-radius: 14px; }
+.node rect { fill: var(--paper); stroke: var(--line); stroke-width: 1.5; transition: stroke .3s var(--ease), fill .3s var(--ease); }
+.node .n-title { font-size: 12.5px; font-weight: 700; fill: var(--forest); font-family: var(--mono); }
+.node .n-sub { font-size: 11px; fill: var(--muted); font-family: var(--sans); }
+.n-gate rect { stroke: var(--terracotta); stroke-width: 2.5; fill: var(--terracotta-soft); }
+.n-gate .n-title { fill: var(--terracotta); }
+.wire { fill: none; stroke: #c9d3cc; stroke-width: 2.4; transition: opacity .3s var(--ease), stroke .3s var(--ease); }
+.mark-x line { stroke: var(--terracotta); stroke-width: 3; stroke-linecap: round; }
+.mark-x { opacity: 0; transition: opacity .3s var(--ease); }
+.diagram.mode-allowed .w-ab, .diagram.mode-allowed .w-bg, .diagram.mode-allowed .w-gc {
+  stroke: var(--forest); stroke-dasharray: 7 9; animation: archflow 1s linear infinite; }
+.diagram.mode-allowed .n-write rect { stroke: var(--forest); stroke-width: 2.2; fill: var(--forest-soft); }
+.diagram.mode-allowed .w-gd { opacity: .3; }
+.diagram.mode-allowed .n-refuse { opacity: .4; }
+.diagram.mode-refused .w-ab, .diagram.mode-refused .w-bg {
+  stroke: var(--terracotta); stroke-dasharray: 7 9; animation: archflow 1s linear infinite; }
+.diagram.mode-refused .w-gc { opacity: .28; }
+.diagram.mode-refused .n-write { opacity: .4; }
+.diagram.mode-refused .w-gd { stroke: var(--terracotta); stroke-dasharray: 4 6; }
+.diagram.mode-refused .n-refuse rect { stroke: var(--terracotta); stroke-width: 2.4; fill: var(--terracotta-soft); }
+.diagram.mode-refused .n-refuse .mark-x { opacity: 1; }
+.diagram.mode-refused .n-gate rect { animation: archgate .9s var(--ease) infinite alternate; }
+@keyframes archflow { to { stroke-dashoffset: -16; } }
+@keyframes archgate { from { stroke-width: 2.5; } to { stroke-width: 4.2; } }
+.arch-fig figcaption { font-size: 0.82rem; color: var(--muted); margin-top: 12px; line-height: 1.5; max-width: 60ch; }
+@media (prefers-reduced-motion: reduce) {
+  .diagram .wire { animation: none !important; }
+  .diagram .n-gate rect { animation: none !important; }
+  .diagram.mode-allowed .w-gd, .diagram.mode-allowed .n-refuse,
+  .diagram.mode-refused .w-gc, .diagram.mode-refused .n-write { opacity: 1 !important; }
+  .diagram .n-refuse .mark-x { opacity: 1 !important; }
+}
+</style>
 </head>
 <body>
 
@@ -171,6 +214,47 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 <h2>Draft and commit are separate paths. The write only fires through approval.</h2>
   <p>The whole safety story is one design choice, enforced in code: the thing that proposes an action never performs it. Proposing and committing are separate endpoints, and approval is the only path that mutates the live record — the propose path contains no write statements. (A demo reset endpoint reseeds the fixture; it's furniture I'd delete in production, and true structural separation — the propose path running without write permissions at all — is on the hardening list below.)</p>
 
+  <figure class="arch-fig">
+    <div class="arch-controls" role="group" aria-label="Which write path to show">
+      <button type="button" class="arch-btn active" data-mode="allowed" aria-pressed="true">Approved write</button>
+      <button type="button" class="arch-btn" data-mode="refused" aria-pressed="false">Refused write</button>
+    </div>
+    <svg class="diagram mode-allowed" viewBox="0 0 620 452" role="img"
+      aria-label="A request is proposed, held as a pending draft, and reaches the approve gate. An approved write flows to the record and the audit log; a refused high-stakes write stops at the gate with a 400 and nothing is written.">
+      <path class="wire w-ab" d="M310 78 V120"/>
+      <path class="wire w-bg" d="M310 174 V216"/>
+      <path class="wire w-gc" d="M268 276 C 236 320, 202 332, 174 358"/>
+      <path class="wire w-gd" d="M352 276 C 384 320, 418 332, 446 358"/>
+    <g class="node n-a">
+      <rect x="185" y="26" width="250" height="52" rx="12"/>
+      <text class="n-title" x="310.0" y="48" text-anchor="middle">POST /api/copilot</text>
+      <text class="n-sub" x="310.0" y="66" text-anchor="middle">proposes — writes nothing</text>
+    </g>
+    <g class="node n-b">
+      <rect x="185" y="122" width="250" height="52" rx="12"/>
+      <text class="n-title" x="310.0" y="144" text-anchor="middle">pendingActions</text>
+      <text class="n-sub" x="310.0" y="162" text-anchor="middle">draft held by id, server-side</text>
+    </g>
+    <g class="node n-gate">
+      <rect x="195" y="218" width="230" height="58" rx="12"/>
+      <text class="n-title" x="310.0" y="240" text-anchor="middle">POST /api/approve</text>
+      <text class="n-sub" x="310.0" y="258" text-anchor="middle">the only write path</text>
+    </g>
+    <g class="node n-write">
+      <rect x="57" y="360" width="235" height="62" rx="12"/>
+      <text class="n-title" x="174.5" y="382" text-anchor="middle">write + audit_log</text>
+      <text class="n-sub" x="174.5" y="400" text-anchor="middle">row flips · entry appended</text>
+    </g>
+    <g class="node n-refuse">
+      <rect x="335" y="360" width="235" height="62" rx="12"/>
+      <text class="n-title" x="452.5" y="382" text-anchor="middle">refused · 400</text>
+      <text class="n-sub" x="452.5" y="400" text-anchor="middle">nothing written</text>
+      <g class="mark-x"><line x1="536" y1="348" x2="552" y2="364"/><line x1="552" y1="348" x2="536" y2="364"/></g>
+    </g>
+    </svg>
+    <figcaption>The propose path holds a draft and writes nothing. <strong>Approve is the only path that mutates the record</strong> — and a high-stakes write is refused server-side unless <code>confirmed === true</code>. Toggle the refused path: it dies at the gate. That refusal is eval&nbsp;4.</figcaption>
+  </figure>
+
   <div class="flow">
     <div class="step">
       <div class="st-name"><code>POST /api/copilot</code> — propose, write nothing</div>
@@ -210,6 +294,19 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
       if (s.getBoundingClientRect().top < innerHeight * 1.1) s.classList.add('in');
     });
   }, 500); });
+})();
+</script>
+<script>
+(function(){
+  var d = document.querySelector('.diagram'); if (!d) return;
+  document.querySelectorAll('.arch-btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.arch-btn').forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
+      b.classList.add('active'); b.setAttribute('aria-pressed','true');
+      d.classList.remove('mode-allowed','mode-refused');
+      d.classList.add('mode-' + b.dataset.mode);
+    });
+  });
 })();
 </script>
 </body>
