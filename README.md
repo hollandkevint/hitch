@@ -1,4 +1,4 @@
-# Hitch
+# Hitch · a Hitch Planning prototype
 
 *Your wedding, without a hitch.*
 
@@ -39,7 +39,7 @@ Reset demo state anytime: `curl -X POST localhost:3000/api/reset`, or delete `we
 
 ## Provenance
 
-Built July 2026 as a working prototype for a product exercise, then hardened for release. Disclosed deviation from the original plan: built as a local zero-dependency Node app instead of a hosted builder stack, because localhost + SQLite is more reliable in a live demo (no network, no build step, restarts clean) and keeps every layer inspectable.
+Built July 2026 as a working prototype, then hardened for release. Deliberately a zero-dependency Node app rather than a hosted builder stack: localhost + SQLite is more reliable in a live demo (no network, no build step, restarts clean) and keeps every layer inspectable.
 
 ## License
 

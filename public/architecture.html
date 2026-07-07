@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch Planning &mdash; Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --ivory: #faf7f2; --paper: #fffdf9; --ink: #26302b; --muted: #7d7a72;
+    --line: #e9e2d6; --forest: #2b4a3e; --forest-deep: #223b31; --forest-soft: #e8efe9;
+    --terracotta: #b4532a; --terracotta-soft: #f7e9e1;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  body { background: var(--ivory); color: var(--ink); font-family: var(--serif); line-height: 1.65; }
+
+  .masthead { background: var(--forest); color: #f2f0e9; padding: 66px 24px 30px; }
+  .masthead-inner { max-width: 760px; margin: 0 auto; }
+  .eyebrow { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #a8c0b2; }
+  .mast-brand { display: flex; align-items: center; gap: 17px; margin: 20px 0 8px; }
+  .mast-mark { display: inline-flex; flex-shrink: 0; }
+  .masthead h1 { font-size: 2.7rem; font-weight: 600; line-height: 1; margin: 0; letter-spacing: 0.01em; }
+  .masthead .dek { font-size: 1.12rem; color: #cfddd3; max-width: 60ch; font-style: italic; margin-top: 16px; }
+  .masthead .byline { font-family: var(--sans); font-size: 0.82rem; color: #a8c0b2; margin-top: 22px; }
+  .hub { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .hub a {
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;
+    color: #f2f0e9; text-decoration: none; padding: 8px 15px; border: 1px solid #4a6a5c;
+    border-radius: 999px; background: rgba(255,255,255,0.04);
+  }
+  .hub a:hover { background: rgba(255,255,255,0.11); }
+  .hub a .arw { color: #a8c0b2; }
+
+  nav.jump {
+    position: sticky; top: 0; z-index: 10; background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); padding: 11px 24px;
+  }
+  nav.jump .inner { max-width: 760px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  nav.jump a {
+    font-family: var(--sans); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); text-decoration: none;
+  }
+  nav.jump a:hover { color: var(--forest); }
+
+  main { max-width: 760px; margin: 0 auto; padding: 24px; }
+  section { padding: 50px 0 8px; scroll-margin-top: 60px; }
+  section + section { border-top: 1px solid var(--line); margin-top: 40px; }
+  .kicker { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--forest); }
+  h2 { font-size: 1.5rem; font-weight: 600; margin: 10px 0 18px; text-wrap: balance; }
+  h3 { font-family: var(--sans); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; color: var(--forest); margin: 26px 0 8px; text-transform: uppercase; }
+  p { max-width: 68ch; margin-bottom: 14px; font-size: 0.98rem; }
+  p.lead { font-size: 1.1rem; }
+  em { font-style: italic; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--forest-soft); color: var(--forest-deep); padding: 1px 5px; border-radius: 5px; }
+  .pull { font-size: 1.26rem; font-style: italic; color: var(--forest); line-height: 1.45; max-width: 34ch; margin: 28px 0; text-wrap: balance; }
+
+  /* Flow diagram */
+  .flow { display: grid; grid-template-columns: 1fr; gap: 0; margin: 26px 0 12px; font-family: var(--sans); }
+  .flow .step { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; position: relative; }
+  .flow .step + .step { margin-top: 30px; }
+  .flow .step + .step::before {
+    content: "↓"; position: absolute; top: -25px; left: 24px; color: var(--forest); font-size: 1.1rem;
+  }
+  .flow .st-name { font-size: 0.82rem; font-weight: 700; color: var(--forest); letter-spacing: 0.02em; }
+  .flow .st-name code { background: none; color: var(--terracotta); padding: 0; font-size: 0.82rem; }
+  .flow .st-body { font-size: 0.9rem; color: var(--ink); margin-top: 5px; line-height: 1.5; }
+  .flow .st-body code { font-size: 0.8rem; }
+  .flow .gatekey { border-top: 3px solid var(--terracotta); }
+
+  /* Decision ledger (reused from pre-read) */
+  .ledger { list-style: none; margin: 20px 0 10px; }
+  .ledger li { padding: 18px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr; gap: 5px; }
+  .ledger .call { font-weight: 700; font-size: 1rem; }
+  .ledger .call code { font-size: 0.82rem; }
+  .ledger .why { font-family: var(--sans); font-size: 0.9rem; color: var(--ink); max-width: 64ch; line-height: 1.5; }
+  .ledger .why b { color: var(--terracotta); font-weight: 600; }
+
+  table { border-collapse: collapse; width: 100%; margin: 22px 0 10px; font-family: var(--sans); font-size: 0.87rem; }
+  th { text-align: left; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 14px 10px 0; border-bottom: 1px solid var(--ink); }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td code { font-size: 0.8rem; }
+
+  .callout { background: var(--forest-soft); border-radius: 12px; padding: 18px 22px; margin: 24px 0; }
+  .callout p { margin-bottom: 0; font-size: 0.95rem; }
+  .callout .lbl { font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--forest); margin-bottom: 7px; }
+
+  .colophon { font-family: var(--sans); font-size: 0.82rem; color: var(--muted); padding: 40px 0 72px; border-top: 1px solid var(--line); margin-top: 40px; }
+  .colophon a { color: var(--forest); }
+  a { color: var(--forest); text-underline-offset: 3px; text-decoration-color: #b9cdc0; }
+
+  @media (max-width: 620px) {
+    .masthead { padding: 44px 20px 26px; } .masthead h1 { font-size: 1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    section { animation: settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">Hitch Planning &middot; 03 &middot; Architecture</p>
+    <div class="mast-brand">
+      <span class="mast-mark" aria-hidden="true">
+        <svg viewBox="0 0 56 34" width="56" height="34">
+          <circle cx="37" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#2b4a3e" stroke-width="6.2"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+        </svg>
+      </span>
+      <h1>Draft and commit are separate paths</h1>
+    </div>
+    <p class="dek">The thing that proposes an action never performs it. Approval is the only path that mutates the record.</p>
+    <p class="byline">Kevin Holland &middot; July 2026</p>
+    <div class="hub">
+      <a href="/">Live app <span class="arw">&rarr;</span></a>
+      <a href="https://github.com/hollandkevint/hitch">Source + evals <span class="arw">&rarr;</span></a>
+    </div>
+  </div>
+</div>
+
+<nav class="jump">
+  <div class="inner">
+    <a href="/">App</a>
+    <a href="/preread.html">Overview</a>
+    <a href="/prd.html">PRD</a>
+    <a href="/process.html">Process</a>
+    <a href="/architecture.html" style="color:var(--forest)">Architecture</a>
+    <a href="/decisions.html">Decisions</a>
+    <a href="/governance.html">Governance</a>
+    <a href="/next.html">What&rsquo;s next</a>
+  </div>
+</nav>
+
+<main>
+<section>
+<h2>Draft and commit are separate paths. The write only fires through approval.</h2>
+  <p>The whole safety story is one design choice, enforced in code: the thing that proposes an action never performs it. Proposing and committing are separate endpoints, and approval is the only path that mutates the live record — the propose path contains no write statements. (A demo reset endpoint reseeds the fixture; it's furniture I'd delete in production, and true structural separation — the propose path running without write permissions at all — is on the hardening list below.)</p>
+
+  <div class="flow">
+    <div class="step">
+      <div class="st-name"><code>POST /api/copilot</code> — propose, write nothing</div>
+      <div class="st-body">Re-queries the live rows fresh (<code>getTasks()</code>, <code>getWedding()</code>), interpolates real data into every sentence, and drafts an action. The action is stashed server-side in a <code>pendingActions</code> Map with an id and a <code>writes[]</code> array. It is never executed on the way out. Returns <code>{ reply, action }</code>; the client renders an action card.</div>
+    </div>
+    <div class="step gatekey">
+      <div class="st-name"><code>POST /api/approve</code> — the only write path</div>
+      <div class="st-body">Looks the action up <em>by id</em> (an id the client didn't author). High-stakes actions are refused server-side unless <code>confirmed === true</code>. Then it runs the declared writes and nothing else: a <code>complete_task</code> is an <code>UPDATE tasks SET status='done'</code>; an <code>update_guest_count</code> adjusts the wedding row; every commit appends an <code>audit_log</code> entry. The pending action is deleted. Refresh and the change holds, it's a real <code>node:sqlite</code> row, not component state.</div>
+    </div>
+  </div>
+
+  <h3>The tool surface</h3>
+  <p>Writes are small typed operations, <code>complete_task</code>, <code>update_guest_count</code>, <code>log_only</code>, not one bundled <code>plan_wedding</code>. Today a regex picks the tool; a real LLM with tool-calling would pick the same tools. The <code>pendingActions</code> draft/commit split, the server-side gate, the audit trail, and the evals are all model-agnostic. The model is swappable behind the tools; the harness is the product.</p>
+
+  <div class="callout">
+    <p class="lbl">Why this is the point, not a wedding toy</p>
+    <p>Swap the wedding's <code>tasks</code> table for a real domain ontology and the architecture is identical: atomic tools over a governed system of record, an approval gate, and an eval set that catches wrong actions. The wedding is a stand-in for the pattern, a governed record an agent can act on without drifting. I built the small version so the real one is a conversation, not a leap.</p>
+  </div>
+</section>
+<div class="colophon">
+  <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>
+</div>
+</main>
+</body>
+</html>

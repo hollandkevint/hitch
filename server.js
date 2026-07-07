@@ -265,6 +265,6 @@ if (require.main === module) {
   // ponytail: bind the host-assigned PORT on all interfaces (0.0.0.0) so Railway/Render
   // can route to it; loopback-only bind fails the platform healthcheck. Local still works.
   const port = process.env.PORT || 3000;
-  server.listen(port, () => console.log(`Hitch → http://localhost:${port}`));
+  server.listen(port, () => console.log(`Hitch Planning → http://localhost:${port}`));
 }
 module.exports = { server, copilot, approveAction, seed, getWedding, getTasks, getAudit, insertTask };

@@ -4,11 +4,11 @@ register: product (the app UI); the pre-read explainer page is brand register.
 
 ## Name
 
-**Hitch.** One word carrying the whole product: *get hitched* (marry), *without a hitch* (the promise: it goes smoothly), and *hitch together* (it binds the shared record). The tagline is the value prop verbatim: "Your wedding, without a hitch." The assistant is also called Hitch, you *ask Hitch*. Renamed from the working title "Wedding Copilot" on 2026-07-02 ("copilot" is the most exhausted suffix in AI products and undersold a product that holds the record rather than riding shotgun). Mark: two interlocking rings (the couple, linked) with an over/under weave (bound, not merely overlapping).
+**Hitch.** One word carrying the whole product: *get hitched* (marry), *without a hitch* (the promise: it goes smoothly), and *hitch together* (it binds the shared record). The tagline is the value prop verbatim: "Your wedding, without a hitch." The assistant is also called Hitch, you *ask Hitch*. Renamed from the working title "Wedding Copilot" on 2026-07-02 ("copilot" is the most exhausted suffix in AI products and undersold a product that holds the record rather than riding shotgun). Mark: two interlocking rings (the couple, linked) with an over/under weave (bound, not merely overlapping). Company/site name (2026-07-07): **Hitch Planning** — the startup; the assistant and product stay **Hitch**.
 
 ## Product purpose
 
-A wedding-planning platform whose assistant is grounded in the couple's real, multi-party wedding record and, on explicit approval, writes back to it. Built for a timed product exercise; designed to stand alone as an open-source demonstration of governed agent writeback. The thesis: generic AI advises; only the system-of-record can act on THIS wedding and keep its decisions consistent.
+A wedding-planning platform whose assistant is grounded in the couple's real, multi-party wedding record and, on explicit approval, writes back to it. Built fast as a working prototype; designed to stand alone as an open-source demonstration of governed agent writeback. The thesis: generic AI advises; only the system-of-record can act on THIS wedding and keep its decisions consistent.
 
 ## Users
 

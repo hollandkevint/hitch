@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hitch — the prototype and the thinking behind it</title>
+<title>Hitch Planning — the prototype and the thinking behind it</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   :root {
@@ -101,7 +101,7 @@
 
 <div class="masthead">
   <div class="masthead-inner">
-    <p class="eyebrow">Pre-read · six minutes · working prototype attached</p>
+    <p class="eyebrow">Hitch Planning · overview · six minutes</p>
     <div class="mast-brand">
       <span class="mast-mark" aria-hidden="true">
         <svg viewBox="0 0 56 34" width="56" height="34">
@@ -110,21 +110,34 @@
           <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
         </svg>
       </span>
-      <h1>Hitch</h1>
+      <h1>Hitch Planning</h1>
     </div>
     <p class="tagline">Your wedding, without a hitch.</p>
     <p class="dek">The prototype, and the thinking that produced it. An assistant that knows one wedding completely, acts on it with permission, and tells the truth about which decisions are yours.</p>
-    <p class="byline">Kevin Holland · July 2026 · built for a timed product exercise, shaped to outlive it</p>
+    <p class="byline">Kevin Holland · July 2026</p>
   </div>
 </div>
+
+<nav aria-label="Hitch Planning" style="position:sticky;top:0;z-index:10;background:rgba(250,247,242,0.92);backdrop-filter:blur(6px);border-bottom:1px solid #e9e2d6;padding:11px 24px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <div style="max-width:760px;margin:0 auto;display:flex;flex-wrap:wrap;gap:4px 20px;">
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/">App</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#2b4a3e;text-decoration:none;" href="/preread.html">Overview</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/prd.html">PRD</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/process.html">Process</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/architecture.html">Architecture</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/decisions.html">Decisions</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/governance.html">Governance</a>
+    <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/next.html">What&rsquo;s next</a>
+  </div>
+</nav>
 
 <main>
 
 <section>
-  <p class="kicker">01 · The exercise</p>
+  <p class="kicker">01 · The problem</p>
   <h2>A product losing to general-purpose AI</h2>
-  <p class="lead">The brief: you are the single PM at a wedding SaaS with three static features, guest list, seating charts, to-do tracking. Usage is dropping. Interviews say users get better planning help from ChatGPT. The CEO asks for a diagnosis and a proposal: a 300-word PRD and a prototype real enough to react to.</p>
-  <p>Most answers to this brief bolt a chatbot onto the product. I think that answer loses, and the prototype argues why.</p>
+  <p class="lead">We're a wedding SaaS with three static features, guest list, seating charts, to-do tracking. Usage is dropping. Interviews say users get better planning help from ChatGPT. This is the diagnosis and the proposal: a one-page PRD and a prototype real enough to react to.</p>
+  <p>The obvious answer bolts a chatbot onto the product. That answer loses, and the prototype argues why.</p>
 </section>
 
 <section>
@@ -162,7 +175,7 @@
     <li>
       <span class="call">A deterministic rule engine plays the model in the demo</span>
       <span class="instead"><b>instead of</b> a live LLM call on stage</span>
-      <span class="why">The model is a commodity and swappable behind the same atomic tools. The part that isn't commodity, the governed write path, the audit trail, the eval gate, is exactly what the demo exercises. Every sentence the agent speaks is interpolated from live rows.</span>
+      <span class="why">The model is a commodity and swappable behind the same atomic tools. The part that isn't commodity, the governed write path, the audit trail, the eval gate, is exactly what the demo runs through. Every sentence the agent speaks is interpolated from live rows.</span>
     </li>
   </ul>
 </section>
@@ -254,7 +267,7 @@
 </section>
 
 <div class="colophon">
-  <p>Working prototype: zero-dependency Node (node:http + node:sqlite), one command to run, seven evals in one more. Built July 2026 for a timed product exercise; intended for open source, in the spirit of the <a href="https://github.com/hollandkevint/thinkhaven-method-kit">ThinkHaven Method Kit</a>, where the decision techniques the agent borrows (assumption mapping as a write gate, confidence calibration, anti-sycophancy) are already public. Written and built by Kevin Holland.</p>
+  <p>Working prototype: zero-dependency Node (node:http + node:sqlite), one command to run, seven evals in one more. Built July 2026; intended for open source, in the spirit of the <a href="https://github.com/hollandkevint/thinkhaven-method-kit">ThinkHaven Method Kit</a>, where the decision techniques the agent borrows (assumption mapping as a write gate, confidence calibration, anti-sycophancy) are already public. Written and built by Kevin Holland.</p>
 </div>
 
 </main>

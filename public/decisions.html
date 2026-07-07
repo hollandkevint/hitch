@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch Planning &mdash; Decisions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --ivory: #faf7f2; --paper: #fffdf9; --ink: #26302b; --muted: #7d7a72;
+    --line: #e9e2d6; --forest: #2b4a3e; --forest-deep: #223b31; --forest-soft: #e8efe9;
+    --terracotta: #b4532a; --terracotta-soft: #f7e9e1;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  body { background: var(--ivory); color: var(--ink); font-family: var(--serif); line-height: 1.65; }
+
+  .masthead { background: var(--forest); color: #f2f0e9; padding: 66px 24px 30px; }
+  .masthead-inner { max-width: 760px; margin: 0 auto; }
+  .eyebrow { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #a8c0b2; }
+  .mast-brand { display: flex; align-items: center; gap: 17px; margin: 20px 0 8px; }
+  .mast-mark { display: inline-flex; flex-shrink: 0; }
+  .masthead h1 { font-size: 2.7rem; font-weight: 600; line-height: 1; margin: 0; letter-spacing: 0.01em; }
+  .masthead .dek { font-size: 1.12rem; color: #cfddd3; max-width: 60ch; font-style: italic; margin-top: 16px; }
+  .masthead .byline { font-family: var(--sans); font-size: 0.82rem; color: #a8c0b2; margin-top: 22px; }
+  .hub { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .hub a {
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;
+    color: #f2f0e9; text-decoration: none; padding: 8px 15px; border: 1px solid #4a6a5c;
+    border-radius: 999px; background: rgba(255,255,255,0.04);
+  }
+  .hub a:hover { background: rgba(255,255,255,0.11); }
+  .hub a .arw { color: #a8c0b2; }
+
+  nav.jump {
+    position: sticky; top: 0; z-index: 10; background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); padding: 11px 24px;
+  }
+  nav.jump .inner { max-width: 760px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  nav.jump a {
+    font-family: var(--sans); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); text-decoration: none;
+  }
+  nav.jump a:hover { color: var(--forest); }
+
+  main { max-width: 760px; margin: 0 auto; padding: 24px; }
+  section { padding: 50px 0 8px; scroll-margin-top: 60px; }
+  section + section { border-top: 1px solid var(--line); margin-top: 40px; }
+  .kicker { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--forest); }
+  h2 { font-size: 1.5rem; font-weight: 600; margin: 10px 0 18px; text-wrap: balance; }
+  h3 { font-family: var(--sans); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; color: var(--forest); margin: 26px 0 8px; text-transform: uppercase; }
+  p { max-width: 68ch; margin-bottom: 14px; font-size: 0.98rem; }
+  p.lead { font-size: 1.1rem; }
+  em { font-style: italic; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--forest-soft); color: var(--forest-deep); padding: 1px 5px; border-radius: 5px; }
+  .pull { font-size: 1.26rem; font-style: italic; color: var(--forest); line-height: 1.45; max-width: 34ch; margin: 28px 0; text-wrap: balance; }
+
+  /* Flow diagram */
+  .flow { display: grid; grid-template-columns: 1fr; gap: 0; margin: 26px 0 12px; font-family: var(--sans); }
+  .flow .step { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; position: relative; }
+  .flow .step + .step { margin-top: 30px; }
+  .flow .step + .step::before {
+    content: "↓"; position: absolute; top: -25px; left: 24px; color: var(--forest); font-size: 1.1rem;
+  }
+  .flow .st-name { font-size: 0.82rem; font-weight: 700; color: var(--forest); letter-spacing: 0.02em; }
+  .flow .st-name code { background: none; color: var(--terracotta); padding: 0; font-size: 0.82rem; }
+  .flow .st-body { font-size: 0.9rem; color: var(--ink); margin-top: 5px; line-height: 1.5; }
+  .flow .st-body code { font-size: 0.8rem; }
+  .flow .gatekey { border-top: 3px solid var(--terracotta); }
+
+  /* Decision ledger (reused from pre-read) */
+  .ledger { list-style: none; margin: 20px 0 10px; }
+  .ledger li { padding: 18px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr; gap: 5px; }
+  .ledger .call { font-weight: 700; font-size: 1rem; }
+  .ledger .call code { font-size: 0.82rem; }
+  .ledger .why { font-family: var(--sans); font-size: 0.9rem; color: var(--ink); max-width: 64ch; line-height: 1.5; }
+  .ledger .why b { color: var(--terracotta); font-weight: 600; }
+
+  table { border-collapse: collapse; width: 100%; margin: 22px 0 10px; font-family: var(--sans); font-size: 0.87rem; }
+  th { text-align: left; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 14px 10px 0; border-bottom: 1px solid var(--ink); }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td code { font-size: 0.8rem; }
+
+  .callout { background: var(--forest-soft); border-radius: 12px; padding: 18px 22px; margin: 24px 0; }
+  .callout p { margin-bottom: 0; font-size: 0.95rem; }
+  .callout .lbl { font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--forest); margin-bottom: 7px; }
+
+  .colophon { font-family: var(--sans); font-size: 0.82rem; color: var(--muted); padding: 40px 0 72px; border-top: 1px solid var(--line); margin-top: 40px; }
+  .colophon a { color: var(--forest); }
+  a { color: var(--forest); text-underline-offset: 3px; text-decoration-color: #b9cdc0; }
+
+  @media (max-width: 620px) {
+    .masthead { padding: 44px 20px 26px; } .masthead h1 { font-size: 1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    section { animation: settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">Hitch Planning &middot; 04 &middot; Decisions</p>
+    <div class="mast-brand">
+      <span class="mast-mark" aria-hidden="true">
+        <svg viewBox="0 0 56 34" width="56" height="34">
+          <circle cx="37" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#2b4a3e" stroke-width="6.2"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+        </svg>
+      </span>
+      <h1>The calls, and what each traded away</h1>
+    </div>
+    <p class="dek">The engineering decisions, plus the open questions we push on in design review &mdash; each with its current answer and the hardening step it points at.</p>
+    <p class="byline">Kevin Holland &middot; July 2026</p>
+    <div class="hub">
+      <a href="/">Live app <span class="arw">&rarr;</span></a>
+      <a href="https://github.com/hollandkevint/hitch">Source + evals <span class="arw">&rarr;</span></a>
+    </div>
+  </div>
+</div>
+
+<nav class="jump">
+  <div class="inner">
+    <a href="/">App</a>
+    <a href="/preread.html">Overview</a>
+    <a href="/prd.html">PRD</a>
+    <a href="/process.html">Process</a>
+    <a href="/architecture.html">Architecture</a>
+    <a href="/decisions.html" style="color:var(--forest)">Decisions</a>
+    <a href="/governance.html">Governance</a>
+    <a href="/next.html">What&rsquo;s next</a>
+  </div>
+</nav>
+
+<main>
+<section>
+<h2>The engineering calls, and what each traded away</h2>
+  <ul class="ledger">
+    <li>
+      <span class="call">A deterministic rule engine plays the model on stage</span>
+      <span class="why"><b>instead of</b> a live LLM call in the demo. The model is commodity and swappable behind the same atomic tools. Keeping it deterministic forces the conversation onto the part that isn't commodity, the governed write path, not prompt quality. Every sentence is interpolated from live rows, so it's grounded by construction.</span>
+    </li>
+    <li>
+      <span class="call">Split <code>draft</code> from <code>commit</code>, enforce the gate server-side</span>
+      <span class="why"><b>instead of</b> a UI-only confirm. A UI gate is a suggestion. Writes execute only inside <code>/api/approve</code>, keyed by a server-held id; replay a high-stakes approve with <code>confirmed:false</code> and the server rejects it, writes nothing. That's what eval 4 tests.</span>
+    </li>
+    <li>
+      <span class="call">Atomic typed tools, not one bundled action</span>
+      <span class="why"><b>instead of</b> a single <code>plan_wedding</code> call. Small operations keep the blast radius declared and testable: approve flips exactly the declared rows and nothing else. It's also what makes the model swap-in trivial, the tool contract doesn't change.</span>
+    </li>
+    <li>
+      <span class="call">Ground at request time; never cache state</span>
+      <span class="why"><b>instead of</b> holding a snapshot. <code>copilot()</code> re-queries every turn, so it's structurally grounded, not accurate-by-luck. It cannot name a vendor or date that isn't in the record. Fluency on data it can't see is the failure mode, not the feature.</span>
+    </li>
+  </ul>
+  <p style="font-family:var(--sans); font-size:0.9rem; color:var(--muted); margin-top:18px;">The <em>product</em> calls, own one high-frequency job, cede generic inspiration, multiplayer by default, live in the <a href="/preread.html#">pre-read</a>. These are the calls under the hood.</p>
+</section>
+
+<section>
+  <p class="kicker">Open questions &amp; follow-ups</p>
+  <h2>The design-review trail</h2>
+  <p class="lead">The questions we push on internally, each with the current answer and the hardening step it points at. A prototype earns trust by naming its own seams.</p>
+  <ul class="ledger">
+    <li>
+      <span class="call">Why is a rule engine playing the model? Isn&rsquo;t that a fake demo?</span>
+      <span class="why">Deliberate. The model is the commodity layer &mdash; swappable behind the same three atomic tools &mdash; and keeping it deterministic keeps every design review on the part that isn&rsquo;t commodity: the governed write path. Every sentence is interpolated from live rows, so grounding is by construction, not by luck. <b>Next:</b> Put a real model behind the tools (it only picks the tool; it still can&rsquo;t write) and promote it only when it passes the eval contract on held-out cases.</span>
+    </li>
+    <li>
+      <span class="call">What stops a replayed or forged approval?</span>
+      <span class="why">Writes execute only inside <code>/api/approve</code>, keyed by a server-held pending-action id the client didn&rsquo;t author, and high-stakes actions are refused server-side unless <code>confirmed === true</code>. Replay a decline-cascade approve with <code>confirmed:false</code> and the server writes nothing &mdash; that&rsquo;s eval 4. <b>Next:</b> Idempotency keys per approval, so even a legitimate double-submit can&rsquo;t double-apply.</span>
+    </li>
+    <li>
+      <span class="call">What if the record changed between draft and approve?</span>
+      <span class="why">Today the draft is grounded at propose time and the window is seconds long. The honest answer is that a stale draft could commit against moved state. <b>Next:</b> Re-validate live state at commit time, not just draft time, and carry the user&rsquo;s edits to a draft through the approve payload.</span>
+    </li>
+    <li>
+      <span class="call">What happens to a draft if the server restarts?</span>
+      <span class="why">It&rsquo;s dropped &mdash; <code>pendingActions</code> is an in-memory Map. Acceptable for a prototype; drafts are cheap to regenerate. <b>Next:</b> Durable draft storage, so an approval in flight survives a restart.</span>
+    </li>
+    <li>
+      <span class="call">How do the evals survive a real model?</span>
+      <span class="why">The contract survives; the assertions change. What counts as wrong &mdash; invented tasks, wrong vendor, undeclared writes, ungated cascades, false cheer, injection &mdash; is model-independent. The checks get rewritten from template assertions to behavior assertions. <b>Next:</b> The eval set becomes the release gate: a candidate model is promoted only if it passes without degrading held-out cases.</span>
+    </li>
+    <li>
+      <span class="call">Two parties share this record. Where&rsquo;s the access control?</span>
+      <span class="why">The planner view is read-only with the full audit trail, and every commit is attributed. But actor identity is a demo convention, not authentication. <b>Next:</b> Per-actor auth so the audit trail is trustworthy across parties, and PII in the record treated as an access-control boundary, not a column.</span>
+    </li>
+  </ul>
+</section>
+<div class="colophon">
+  <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>
+</div>
+</main>
+</body>
+</html>
