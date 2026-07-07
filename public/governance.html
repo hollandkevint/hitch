@@ -128,6 +128,35 @@ body.js-reveal section.in { opacity: 1; transform: none; }
 }
 nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </style>
+<style id="gov-2x2">
+.gov2x2 { margin: 28px 0 8px; font-family: var(--sans); }
+.plane-wrap { display: grid; grid-template-columns: 20px minmax(0,460px); grid-template-rows: minmax(0,460px) 20px; gap: 8px; }
+.axis-y { grid-column: 1; grid-row: 1; writing-mode: vertical-rl; transform: rotate(180deg);
+  text-align: center; align-self: center; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.plane { grid-column: 2; grid-row: 1; position: relative; border-radius: 12px; border: 1px solid var(--line);
+  background: linear-gradient(to top right, var(--forest-soft) 0%, #f2ece3 46%, var(--terracotta-soft) 100%); }
+.axis-x { grid-column: 2; grid-row: 2; text-align: center; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.quad-label { position: absolute; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: rgba(38,48,43,0.34); }
+.pt { position: absolute; transform: translate(-50%, 50%); background: var(--paper); border: 1.5px solid var(--line);
+  border-radius: 999px; padding: 5px 11px 5px 8px; font-size: 0.73rem; font-weight: 600; color: var(--ink);
+  cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(38,48,43,0.10); transition: box-shadow .16s var(--ease), border-color .16s var(--ease); }
+.pt .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.pt[data-v="flows"] .dot { background: var(--forest); }
+.pt[data-v="gated"] .dot { background: var(--terracotta); }
+.pt[data-v="refused"] .dot { background: #8a2f14; }
+.pt:hover, .pt:focus-visible { border-color: var(--forest); outline: none; z-index: 4; box-shadow: 0 5px 14px rgba(38,48,43,0.20); }
+.pt.sel { border-color: var(--forest); z-index: 4; }
+.gov-readout { margin-top: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 15px 17px; }
+.gov-readout .v { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; }
+.gov-readout .v.flows { color: var(--forest); }
+.gov-readout .v.gated, .gov-readout .v.refused { color: var(--terracotta); }
+.gov-readout h4 { font-family: var(--display); font-optical-sizing: auto; font-size: 1.02rem; margin: 4px 0 5px; font-weight: 600; }
+.gov-readout p { font-size: 0.88rem; color: var(--ink); margin: 0; max-width: 62ch; line-height: 1.5; }
+.gov-readout.empty h4 { color: var(--muted); font-family: var(--sans); font-weight: 600; font-size: 0.92rem; }
+@media (max-width: 540px) { .pt { font-size: 0.68rem; padding: 4px 9px 4px 7px; } }
+</style>
 </head>
 <body>
 
@@ -174,6 +203,28 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <h3>Write policy — value times reversibility</h3>
   <p>Cheap, reversible writes flow (reorder a to-do, mark a task done). Writes that change another party's reality get the gate. The gate <em>names the cascade</em> before it asks, guest count 120 → 118, the caterer's headcount, the seats, because a confirm that only says "are you sure" trains people to click through it. The policy is coded, not vibed.</p>
 
+  <figure class="gov2x2" aria-label="Write policy: value times reversibility, with real actions plotted">
+    <div class="plane-wrap">
+      <span class="axis-y">value / blast radius →</span>
+      <div class="plane">
+        <span class="quad-label" style="left:9%;bottom:8%">flows</span>
+        <span class="quad-label" style="left:34%;top:8%">gated</span>
+        <span class="quad-label" style="right:7%;top:8%">refused</span>
+      <button type="button" class="pt" data-v="flows" style="left:15%;bottom:13%" data-title="Flows — writes automatically" data-why="Low blast radius, trivially reversible. Gating it would just train people to click through the next dialog that matters. It writes and logs; no confirm."><span class="dot"></span>Reorder a to-do</button>
+      <button type="button" class="pt" data-v="flows" style="left:31%;bottom:25%" data-title="Flows — writes automatically" data-why="Reversible and low-stakes — recording an offsetting change restores it. This is the app's happy-path writeback: approve, the row flips, the audit trail gains a line."><span class="dot"></span>Mark a task done</button>
+      <button type="button" class="pt" data-v="flows" style="left:20%;bottom:37%" data-title="Flows — writes automatically" data-why="An append to the record, no downstream party affected. Cheap and reversible, so it flows through the same approve path without a confirm gate."><span class="dot"></span>Log a vendor note</button>
+      <button type="button" class="pt" data-v="gated" style="left:42%;bottom:74%" data-title="Gated — names the cascade, confirms server-side" data-why="The Hendersons declining moves the caterer's headcount, the invoice, and the seating. High blast radius across parties, so the gate fires and names that cascade before it asks. Refused server-side unless confirmed === true. That's eval 4."><span class="dot"></span>Guest count 120 → 118</button>
+      <button type="button" class="pt" data-v="refused" style="left:77%;bottom:66%" data-title="Refused without explicit confirmation" data-why="An irreversible external action. The agent drafts it from the real record and hands it over — it never auto-sends. Value is high and you can't take it back, so the human owns the send."><span class="dot"></span>Send the vendor email</button>
+      </div>
+      <span class="axis-x">harder to reverse →</span>
+    </div>
+    <div class="gov-readout empty" id="gov-readout" aria-live="polite">
+      <h4>Hover or focus a write to see the policy it hits.</h4>
+      <p>The plane is the policy: cheap-and-reversible flows, high-blast-radius-across-parties gets the gate, irreversible-and-external is handed back to a human. Coded, not vibed.</p>
+    </div>
+  </figure>
+
+
   <h3>The gate is server-enforced</h3>
   <p>There is no generic write endpoint to call. The only mutation path is <code>/api/approve</code>, and for high-stakes actions it checks <code>confirmed === true</code> and refuses server-side otherwise. The confirm dialog is not UI theater.</p>
 
@@ -217,6 +268,30 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
       if (s.getBoundingClientRect().top < innerHeight * 1.1) s.classList.add('in');
     });
   }, 500); });
+})();
+</script>
+<script>
+(function(){
+  var out = document.getElementById('gov-readout'); if (!out) return;
+  var h4 = out.querySelector('h4'), p = out.querySelector('p');
+  var def = { title: h4.textContent, why: p.textContent };
+  function show(el){
+    document.querySelectorAll('.pt').forEach(function(x){ x.classList.remove('sel'); });
+    if (el){
+      el.classList.add('sel');
+      out.className = 'gov-readout';
+      h4.innerHTML = '<span class="v ' + el.dataset.v + '">' + el.dataset.v + '</span>';
+      var t = document.createElement('span'); t.textContent = ' \u00b7 ' + el.dataset.title; h4.appendChild(t);
+      p.textContent = el.dataset.why;
+    } else {
+      out.className = 'gov-readout empty'; h4.textContent = def.title; p.textContent = def.why;
+    }
+  }
+  document.querySelectorAll('.pt').forEach(function(el){
+    el.addEventListener('mouseenter', function(){ show(el); });
+    el.addEventListener('focus', function(){ show(el); });
+    el.addEventListener('click', function(){ show(el); });
+  });
 })();
 </script>
 </body>
