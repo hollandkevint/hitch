@@ -61,10 +61,15 @@
   <section class="copilot">
     <div class="copilot-head">
       <h2>Ask Hitch <span class="badge">knows your wedding</span></h2>
-      <label class="agent-toggle" id="agent-toggle" title="Deterministic by default; flip to route tool-selection through the v2 model behind the same gate and evals.">
-        <input type="checkbox" id="agent-live">
-        <span id="agent-mode-label">Deterministic</span>
-      </label>
+      <div class="agent-switch" id="agent-toggle" title="Deterministic by default; flip to route tool-selection through the v2 model behind the same gate and evals.">
+        <span class="pole" id="pole-demo">Demo</span>
+        <label class="switch">
+          <input type="checkbox" id="agent-live" aria-label="Live agent engine">
+          <span class="slider" aria-hidden="true"></span>
+        </label>
+        <span class="pole" id="pole-agent">Agent</span>
+        <span class="agent-note" id="agent-mode-label"></span>
+      </div>
     </div>
     <div id="chat" role="log" aria-live="polite"></div>
     <div id="action-slot" aria-live="polite"></div>
@@ -74,6 +79,20 @@
       <button type="submit">Ask</button>
     </form>
     <p class="hints" id="hints"></p>
+  </section>
+
+  <section class="plan-preview" aria-label="Plan at a glance">
+    <div class="copilot-head"><h2>Your plan at a glance</h2></div>
+    <div class="plan-grid">
+      <div class="plan-gantt">
+        <h3>Timeline to the day</h3>
+        <div id="plan-chart"></div>
+      </div>
+      <div class="plan-budget">
+        <h3>Budget</h3>
+        <div id="budget-widget"></div>
+      </div>
+    </div>
   </section>
 
   <section class="connectors" aria-label="Connect your systems">
@@ -87,6 +106,14 @@
 
 <main id="planner-view" role="tabpanel" aria-labelledby="btn-planner" hidden>
   <p class="copy-label">Carbon copy · planner · writes require approval</p>
+  <section class="planner-console">
+    <div class="copilot-head"><h2>Planner console <span class="badge">buyer view</span></h2></div>
+    <div id="planner-capacity"></div>
+    <div class="planner-attention">
+      <h3>Needs your attention</h3>
+      <ul id="planner-attention-list"></ul>
+    </div>
+  </section>
   <section class="timeline">
     <h2>All tasks <span class="badge readonly">read-only</span></h2>
     <ul id="planner-task-list"></ul>
@@ -94,6 +121,14 @@
   <section class="audit">
     <h2>Audit trail</h2>
     <ul id="audit-list"></ul>
+  </section>
+  <section class="planner-vendors">
+    <h2>Vendor oversight</h2>
+    <div id="planner-vendor-list"></div>
+  </section>
+  <section class="planner-budget-section">
+    <h2>Budget exposure</h2>
+    <div id="planner-budget"></div>
   </section>
 </main>
 

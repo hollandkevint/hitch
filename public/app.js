@@ -55,6 +55,9 @@ async function refresh() {
       <time>${new Date(a.at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</time>
     </li>`).join('');
   renderRecordDepth({ planner, vendors, guests, budget });
+  renderPlanChart(open, wedding);
+  renderBudget(budget);
+  renderPlannerConsole({ planner, vendors, open });
 
   // first load only: Hitch opens grounded in the record, not with an empty pane.
   // After 9pm it acknowledges the hour first — most couples plan after work,
@@ -148,6 +151,94 @@ function renderRecordDepth({ planner, vendors, guests, budget }) {
       <h3>Vendor risk</h3>
       <p>${highRisk.length ? highRisk.map(v => `${esc(v.name)} — ${esc(v.next_action)}`).join('<br>') : 'No high-risk vendors.'}</p>
     </article>`;
+}
+
+// U2: milestone Gantt — each open task positioned from today to the wedding, colored by phase,
+// so the plan reads as "clustered soon, the day is months out" instead of a flat list.
+function renderPlanChart(open, wedding) {
+  const host = $('#plan-chart');
+  if (!host || !wedding) return;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const end = new Date(wedding.wedding_date + 'T12:00:00');
+  const span = Math.max(1, (end - today) / 86400000);
+  const pos = iso => Math.max(0, Math.min(100, ((new Date(iso + 'T12:00:00') - today) / 86400000 / span) * 100));
+  const byDue = [...open].sort((a, b) => daysLate(b.due_date) - daysLate(a.due_date));
+  const rows = byDue.map(t => {
+    const dl = daysLate(t.due_date);
+    const cls = dl > 0 ? 'late' : (dl >= -7 ? 'soon' : 'later');
+    const w = Math.max(pos(t.due_date), 6);
+    return `<div class="gantt-row">
+      <span class="gantt-label">${esc(t.title)} <em>${fmtDue(t.due_date)}${dl > 0 ? ' · ' + dl + 'd late' : ''}</em></span>
+      <span class="gantt-track"><span class="gantt-bar ${cls}" style="width:${w}%"></span></span>
+    </div>`;
+  }).join('');
+  const weddingRow = `<div class="gantt-row">
+    <span class="gantt-label wedding">Wedding day <em>${fmtDue(wedding.wedding_date)}</em></span>
+    <span class="gantt-track"><span class="gantt-bar wedding" style="width:100%"></span></span>
+  </div>`;
+  host.innerHTML = rows + weddingRow;
+}
+
+// U3: budget summary — total committed vs estimate + the top categories with per-line bars.
+// Renders into both the couple widget and the planner console (same data, two lenses).
+function renderBudget(budget) {
+  const est = budget.reduce((s, b) => s + Number(b.estimate), 0);
+  const com = budget.reduce((s, b) => s + Number(b.committed), 0);
+  const pct = est ? Math.min(100, (com / est) * 100) : 0;
+  const rows = budget.filter(b => Number(b.estimate) > 0)
+    .sort((a, b) => Number(b.committed) - Number(a.committed))
+    .slice(0, 5)
+    .map(b => {
+      const p = Number(b.estimate) ? Math.min(100, (Number(b.committed) / Number(b.estimate)) * 100) : 0;
+      const over = Number(b.variance) > 0;
+      return `<div class="budget-row">
+        <span class="budget-cat">${esc(b.category)}${over ? '<span class="budget-over">over</span>' : ''}</span>
+        <span class="budget-track"><span class="budget-bar ${over ? 'over' : ''}" style="width:${p}%"></span></span>
+        <span class="budget-amt">${money(b.committed)}</span>
+      </div>`;
+    }).join('');
+  const html = `<p class="budget-total"><strong>${money(com)}</strong> committed of ${money(est)} estimated</p>
+    <span class="budget-track big"><span class="budget-bar" style="width:${pct}%"></span></span>
+    <div class="budget-rows">${rows}</div>`;
+  for (const id of ['#budget-widget', '#planner-budget']) {
+    const el = $(id); if (el) el.innerHTML = html;
+  }
+}
+
+const riskRank = r => ({ high: 3, medium: 2, low: 1 }[r] || 0);
+
+// U4: the planner view is the buyer's console — capacity, a prioritized attention queue
+// (overdue tasks + high-risk vendors), and vendor oversight. This is the reason a planner pays.
+function renderPlannerConsole({ planner, vendors, open }) {
+  const cap = $('#planner-capacity');
+  if (cap && planner) {
+    const overdue = open.filter(t => daysLate(t.due_date) > 0).length;
+    cap.innerHTML = `
+      <div class="cap-stat"><strong>${esc(planner.active_weddings)}</strong><span>active weddings</span></div>
+      <div class="cap-stat"><strong>${open.length}</strong><span>open here</span></div>
+      <div class="cap-stat"><strong>${overdue}</strong><span>overdue now</span></div>
+      <div class="cap-who"><strong>${esc(planner.name)}</strong>, ${esc(planner.company)}<span>bottleneck: ${esc(planner.capacity_bottleneck)}</span></div>`;
+  }
+  const att = $('#planner-attention-list');
+  if (att) {
+    const items = [];
+    open.filter(t => daysLate(t.due_date) > 0)
+      .sort((a, b) => daysLate(b.due_date) - daysLate(a.due_date))
+      .forEach(t => items.push(`<li><span class="att-tag late">task</span> ${esc(t.title)}${t.vendor ? ' — ' + esc(t.vendor) : ''} <span class="att-meta">${daysLate(t.due_date)}d late</span></li>`));
+    vendors.filter(v => v.risk === 'high')
+      .forEach(v => items.push(`<li><span class="att-tag risk">vendor</span> ${esc(v.name)} <span class="att-meta">${esc(v.next_action)}</span></li>`));
+    att.innerHTML = items.length ? items.join('') : '<li>Nothing urgent — the record is current.</li>';
+  }
+  const vl = $('#planner-vendor-list');
+  if (vl) {
+    vl.innerHTML = [...vendors].sort((a, b) => riskRank(b.risk) - riskRank(a.risk)).map(v => `
+      <div class="vendor-row">
+        <span class="vendor-name">${esc(v.name)}<span class="vendor-cat">${esc(v.category)}</span></span>
+        <span class="vendor-next">${esc(v.next_action)}</span>
+        <span class="vendor-risk risk-${esc(v.risk)}">${esc(v.risk)}</span>
+        <span class="vendor-amt">${Number(v.contract_amount) ? money(v.contract_amount) : '—'}</span>
+      </div>`).join('');
+  }
 }
 
 function addMsg(kind, text) {
@@ -331,11 +422,16 @@ $('#connector-grid').addEventListener('click', e => {
 async function initAgentToggle() {
   const box = $('#agent-live'), wrap = $('#agent-toggle'), label = $('#agent-mode-label');
   if (!box || !wrap) return;
+  const demo = $('#pole-demo'), agent = $('#pole-agent');
   const paint = ({ live, keyPresent }) => {
-    box.checked = !!live;
+    const on = !!live && keyPresent;
+    box.checked = on;
     box.disabled = !keyPresent;
     wrap.classList.toggle('disabled', !keyPresent);
-    label.textContent = keyPresent ? (live ? 'Live agent · v2' : 'Deterministic') : 'Live needs API key';
+    wrap.classList.toggle('is-live', on);
+    if (demo) demo.classList.toggle('active', !on);
+    if (agent) agent.classList.toggle('active', on);
+    label.textContent = keyPresent ? '' : 'needs API key';
   };
   try { paint(await api('/api/agent-mode')); } catch { paint({ live: false, keyPresent: false }); }
   box.onchange = async () => {
