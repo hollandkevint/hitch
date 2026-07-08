@@ -182,12 +182,12 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 <section>
   <h2>One page, one bet</h2>
   <p class="lead">The PRD is deliberately capped below 300 words: a complete, readable product bet with problem, evidence, solution, success, QA/evals, assumptions, scope, and team asks. The <a href="/">running prototype</a> and <a href="/process.html">process page</a> carry the rest of the proof.</p>
-  <p><strong>Problem.</strong> Usage is dropping: couples and planners get better planning help from ChatGPT than from Hitch&rsquo;s static guest list, seating, and to-do tools. We hold the wedding record, but we do not turn it into next actions. Planner pays for a system of record nobody opens.</p>
+  <p><strong>Problem.</strong> Usage is dropping: planners and their clients get better planning help from ChatGPT than from Hitch&rsquo;s static guest list, seating, and to-do tools. We hold the wedding record, but we do not turn it into next actions. Planner pays for a system of record nobody opens.</p>
   <p><strong>Evidence.</strong> Interviews point to thinking work leaving the product: &ldquo;what&rsquo;s next?&rdquo;, vendor follow-up, RSVP anxiety. ChatGPT can advise generally, but it cannot see this wedding: who confirmed, what is late, which vendors are booked, or what a change cascades to. A planner&rsquo;s memory does not scale.</p>
   <p><strong>Solution (v1).</strong> Put a copilot inside to-do/timeline. It answers &ldquo;what&rsquo;s left?&rdquo; from the live record, drafts the next action, and, after approval, writes back: task done, timeline updated, vendor logged. One high-frequency job end to end, not a chat tab.</p>
   <p><strong>Success.</strong> Primary: weekly active planning sessions per active wedding. Input: 40% of to-do updates start in copilot. Buyer proof: approved writebacks that reduce planner follow-up. Counter-metric: reversed/edited writebacks; kill writeback if reversals stay above 15% after two iterations.</p>
   <p><strong>QA/evals.</strong> Seven binary evals gate release: grounded tasks, correct vendor/date, declared writes only, server-side approval on high-stakes changes, ungroundable handoff, no false-cheer judgment writes, injection safety.</p>
-  <p><strong>Assumptions.</strong> Planner is buyer; couples are the wedge; users will approve visible writes; record freshness is good enough.</p>
+  <p><strong>Assumptions.</strong> Planner is buyer; client-side usage is the wedge; users will approve visible writes; record freshness is good enough.</p>
   <p><strong>Out of scope.</strong> Generic inspiration; seating/guest copilots; white-label planner packaging.</p>
   <p><strong>Team.</strong> Design: in-context action cards. Eng: retrieval, writeback, eval gate. PMM: &ldquo;the assistant that actually knows your wedding&rdquo; plus planner capacity without headcount.</p>
   <div class="callout">
