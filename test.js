@@ -139,7 +139,7 @@ async function main() {
     assert.strictEqual(state.data.wedding.guest_count, 120, 'reset did not restore guest count');
     assert.strictEqual(state.data.tasks.filter(t => t.status === 'open').length, 6, 'reset changed original task seed');
     assert.strictEqual(state.data.planner.active_weddings, 14, 'reset did not restore planner profile');
-    assert(state.data.guests.some(g => g.party_name === 'Henderson party' && g.rsvp_status === 'declined'), 'reset did not restore Henderson party');
+    assert(state.data.guests.some(g => g.party_name === 'Henderson party' && g.rsvp_status === 'pending'), 'reset did not restore Henderson party as pending');
   });
 
   await check('Agent preview: deterministic read-only trace mutates nothing', async () => {

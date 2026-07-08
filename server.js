@@ -152,7 +152,7 @@ function seedSyntheticContext() {
     VALUES (?, ?, ?, ?, ?, ?)
   `);
   [
-    ['Henderson party', 'college friends', 2, 'declined', 'near dance floor', 'Decline moves caterer headcount and table 4 balance'],
+    ['Henderson party', 'college friends', 2, 'pending', 'near dance floor', 'A decline would move caterer headcount and table 4 balance'],
     ['Rivera family', 'bride family', 5, 'confirmed', 'family table', 'Two vegetarian meals'],
     ['Marcus work group', 'groom colleagues', 8, 'pending', 'grouped together', 'Three unanswered RSVPs'],
     ['Aunt Elaine', 'bride family', 1, 'confirmed', 'away from speakers', 'Mobility support'],

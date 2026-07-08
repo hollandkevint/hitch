@@ -63,7 +63,8 @@ function renderRecordDepth({ planner, vendors, guests, budget }) {
   if (!slot || !planner) return;
   const highRisk = vendors.filter(v => v.risk === 'high').map(v => `${v.name}: ${v.next_action}`);
   const pendingGuests = guests.filter(g => g.rsvp_status === 'pending');
-  const variance = budget.reduce((sum, b) => sum + Number(b.variance || 0), 0);
+  const overCommitted = budget.filter(b => Number(b.variance) > 0)
+    .reduce((sum, b) => sum + Number(b.variance), 0);
   slot.innerHTML = `
     <article>
       <h3>Planner</h3>
@@ -76,11 +77,11 @@ function renderRecordDepth({ planner, vendors, guests, budget }) {
     </article>
     <article>
       <h3>Guest state</h3>
-      <p>${esc(pendingGuests.length)} pending parties · Henderson party already marked declined for v2 trace.</p>
+      <p>${esc(pendingGuests.length)} of ${esc(guests.length)} parties pending · Henderson decline would cascade to caterer headcount and table 4.</p>
     </article>
     <article>
       <h3>Budget dependency</h3>
-      <p>${money(variance)} variance across open line items · catering and rentals depend on headcount/seating.</p>
+      <p>${money(overCommitted)} committed over estimate · catering and rentals depend on headcount/seating.</p>
     </article>`;
 }
 
