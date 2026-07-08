@@ -221,11 +221,37 @@ async function main() {
     assert(/Pay florist deposit/.test(data.reply), 'deterministic copilot changed after toggle');
   });
 
+  // NAV CONSISTENCY (filesystem, no server): every panel-rail aside and every site <nav>
+  // across public/*.html must carry the canonical page order — rail and top-line in sync.
+  // Discriminating by design: it fails on a page missing /onboarding.html or a nav in the
+  // wrong order (the exact drift previously caught only by eye). A block is the site nav
+  // only if it spans both endpoints (/prd.html AND /next.html); minimal navs like the 404
+  // page are ignored, but a page that dropped /onboarding.html still spans both and is caught.
+  await check('Nav consistency: rail + top-line match the canonical order on every page', () => {
+    const CANON = ['/prd.html', '/preread.html', '/', '/onboarding.html', '/process.html', '/architecture.html', '/decisions.html', '/governance.html', '/next.html'];
+    const anchors = block => [...block.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map(m => m[1]);
+    const grab = (html, re) => [...html.matchAll(re)].map(m => m[1]);
+    const problems = [];
+    for (const f of fs.readdirSync('./public').filter(n => n.endsWith('.html'))) {
+      const html = fs.readFileSync(`./public/${f}`, 'utf8');
+      const blocks = [
+        ...grab(html, /<aside\b[^>]*class="[^"]*panel-rail[^"]*"[^>]*>([\s\S]*?)<\/aside>/g).map(b => ['rail', b]),
+        ...grab(html, /<nav\b[^>]*>([\s\S]*?)<\/nav>/g).map(b => ['nav ', b]),
+      ];
+      for (const [kind, b] of blocks) {
+        const hrefs = anchors(b);
+        if (!(hrefs.includes('/prd.html') && hrefs.includes('/next.html'))) continue; // not the site nav
+        if (JSON.stringify(hrefs) !== JSON.stringify(CANON)) problems.push(`${f} [${kind.trim()}]: ${JSON.stringify(hrefs)}`);
+      }
+    }
+    assert.strictEqual(problems.length, 0, `nav drift:\n  ${problems.join('\n  ')}\n  expected: ${JSON.stringify(CANON)}`);
+  });
+
   await seed(); // leave a clean demo state
   server.close();
   console.log(results.join('\n'));
   if (results.some(r => r.startsWith('FAIL'))) process.exit(1);
-  console.log('\nAll 7 evals and panel checks pass (5 PRD + steady counsel + injection safety + richer context).');
+  console.log('\nAll 7 evals and panel checks pass (5 PRD + steady counsel + injection safety + richer context + nav consistency).');
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch Planning &mdash; Onboarding</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --ivory: #faf7f2; --paper: #fffdf9; --ink: #26302b; --muted: #706d65;
+    --line: #e9e2d6; --forest: #2b4a3e; --forest-deep: #233d33; --forest-soft: #e8efe9;
+    --terracotta: #b4532a; --terracotta-soft: #f7e9e1;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  body { background: var(--ivory); color: var(--ink); font-family: var(--serif); line-height: 1.65; }
+
+  .masthead { background: var(--forest); color: #f2f0e9; padding: 66px 24px 30px; }
+  .masthead-inner { max-width: 760px; margin: 0 auto; }
+  .eyebrow { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #a8c0b2; }
+  .mast-brand { display: flex; align-items: center; gap: 17px; margin: 20px 0 8px; }
+  .mast-mark { display: inline-flex; flex-shrink: 0; }
+  .masthead h1 { font-size: 2.7rem; font-weight: 600; line-height: 1; margin: 0; letter-spacing: 0.01em; }
+  .masthead .dek { font-size: 1.12rem; color: #cfddd3; max-width: 60ch; font-style: italic; margin-top: 16px; }
+  .masthead .byline { font-family: var(--sans); font-size: 0.82rem; color: #a8c0b2; margin-top: 22px; }
+  .hub { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .hub a {
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;
+    color: #f2f0e9; text-decoration: none; padding: 8px 15px; border: 1px solid #4a6a5c;
+    border-radius: 999px; background: rgba(255,255,255,0.04);
+  }
+  .hub a:hover { background: rgba(255,255,255,0.11); }
+  .hub a .arw { color: #a8c0b2; }
+
+  nav.jump {
+    position: sticky; top: 0; z-index: 10; background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); padding: 11px 24px;
+  }
+  nav.jump .inner { max-width: 760px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  nav.jump a {
+    font-family: var(--sans); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); text-decoration: none;
+  }
+  nav.jump a:hover { color: var(--forest); }
+
+  main { max-width: 760px; margin: 0 auto; padding: 24px; }
+  section { padding: 50px 0 8px; scroll-margin-top: 60px; }
+  section + section { border-top: 1px solid var(--line); margin-top: 40px; }
+  .kicker { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--forest); }
+  h2 { font-size: 1.5rem; font-weight: 600; margin: 10px 0 18px; text-wrap: balance; }
+  h3 { font-family: var(--sans); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; color: var(--forest); margin: 26px 0 8px; text-transform: uppercase; }
+  p { max-width: 68ch; margin-bottom: 14px; font-size: 0.98rem; }
+  p.lead { font-size: 1.1rem; }
+  em { font-style: italic; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--forest-soft); color: var(--forest-deep); padding: 1px 5px; border-radius: 5px; }
+
+  table { border-collapse: collapse; width: 100%; margin: 22px 0 10px; font-family: var(--sans); font-size: 0.87rem; }
+  th { text-align: left; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 14px 10px 0; border-bottom: 1px solid var(--ink); }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td code { font-size: 0.8rem; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .callout { background: var(--forest-soft); border-radius: 12px; padding: 18px 22px; margin: 24px 0; }
+  .callout p { margin-bottom: 0; font-size: 0.95rem; }
+  .callout .lbl { font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--forest); margin-bottom: 7px; }
+
+  .colophon { font-family: var(--sans); font-size: 0.82rem; color: var(--muted); padding: 40px 0 72px; border-top: 1px solid var(--line); margin-top: 40px; }
+  .colophon a { color: var(--forest); }
+  a { color: var(--forest); text-underline-offset: 3px; text-decoration-color: #b9cdc0; }
+
+  @media (max-width: 620px) {
+    .masthead { padding: 44px 20px 26px; } .masthead h1 { font-size: 1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    section { animation: settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style id="craft-upgrade">
+:root { --ease: cubic-bezier(0.22, 1, 0.36, 1); --display: "Fraunces", Georgia, "Times New Roman", serif; }
+body {
+  background:
+    radial-gradient(1200px 480px at 18% -6%, rgba(43,74,62,0.045), transparent 60%),
+    radial-gradient(900px 500px at 100% 8%, rgba(43,74,62,0.024), transparent 55%),
+    var(--ivory);
+  background-attachment: fixed;
+}
+.masthead h1 { font-family: var(--display); font-optical-sizing: auto; letter-spacing: -0.012em; font-weight: 600; line-height: 0.98; }
+.masthead .dek { font-family: var(--display); font-optical-sizing: auto; font-weight: 400; }
+h2 { font-family: var(--display); font-optical-sizing: auto; letter-spacing: -0.008em; line-height: 1.12; }
+nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
+</style>
+<style id="grill-style">
+  /* The grilled session — a stepper of authored turns. No side-stripe borders;
+     background tint carries the agent voice; terracotta is reserved for the one
+     consequence that forces the trade-off. */
+  .grill { margin: 24px 0 6px; }
+  .grill-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 24px; font-family: var(--sans); }
+  .grill-controls button {
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+    border-radius: 999px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    font-family: var(--sans);
+  }
+  .grill-controls button:hover { background: var(--forest-soft); }
+  .grill-controls button.primary { background: var(--forest); color: #fdfcf9; border-color: var(--forest); }
+  .grill-controls button:disabled { opacity: 0.4; cursor: default; }
+  .grill-controls button:focus-visible { outline: 2px solid var(--forest); outline-offset: 1px; }
+  .grill-count { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: auto; }
+
+  .turn { padding: 22px 0 6px; }
+  .turn + .turn { border-top: 1px solid var(--line); margin-top: 6px; }
+  .move { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--forest); margin-bottom: 12px; }
+  .agent { background: var(--forest-soft); border-radius: 12px; padding: 16px 20px; margin: 0 0 12px; font-size: 0.97rem; max-width: none; }
+  .agent .who { display: block; font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--forest); margin-bottom: 6px; }
+  .hot { color: var(--terracotta); font-weight: 700; }
+  .rec { display: block; margin-top: 10px; font-family: var(--sans); font-size: 0.92rem; }
+  .rec b { color: var(--forest); font-family: var(--sans); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; display: inline-block; margin-right: 6px; }
+  .couple { margin: 0 0 12px; padding-left: 20px; font-style: italic; color: var(--ink); max-width: 60ch; }
+  .couple .who { font-style: normal; font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 8px; }
+  .wrote { margin: 0; font-family: var(--mono); font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+  .wrote::before { content: "\2192  written to record"; display: inline-block; color: var(--forest); font-weight: 700; margin-right: 8px; }
+  .wrote code { background: none; color: var(--forest-deep); padding: 0; }
+
+  .snap { background: var(--forest); color: #eef3ee; border-radius: 14px; padding: 22px 24px; margin: 8px 0 6px; }
+  .snap .lbl { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #a8c0b2; margin-bottom: 10px; }
+  .snap .rec-line { font-family: var(--mono); font-size: 0.86rem; line-height: 1.7; color: #f2f0e9; }
+  .snap .snap-links { margin-top: 16px; font-family: var(--sans); font-size: 0.86rem; }
+  .snap .snap-links a { color: #d7e6db; }
+
+  /* domain-model sequencing lanes: an ordered cascade, no decorative accents */
+  .lanes { list-style: none; counter-reset: lane; margin: 20px 0 6px; padding: 0; font-family: var(--sans); }
+  .lanes li { counter-increment: lane; display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--line); }
+  .lanes li:last-child { border-bottom: 1px solid var(--line); }
+  .lanes li::before { content: counter(lane, decimal-leading-zero); font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .lanes b { color: var(--forest); font-size: 0.9rem; }
+  .lanes span { color: var(--ink); font-size: 0.9rem; line-height: 1.5; }
+
+  .machine { font-family: var(--mono); font-size: 0.82rem; color: var(--forest-deep); background: var(--forest-soft); border-radius: 10px; padding: 12px 16px; margin: 6px 0 14px; line-height: 1.7; overflow-x: auto; }
+  .machine .lbl { display: block; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .machine .arw { color: var(--muted); }
+</style>
+<link rel="stylesheet" href="/panel.css">
+</head>
+<body>
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/prd.html">PRD</a>
+  <a href="/preread.html">Overview</a>
+  <a href="/">Demo</a>
+  <a class="primary" href="/onboarding.html">Onboarding</a>
+  <a href="/process.html">Process</a>
+  <a href="/architecture.html">Architecture</a>
+  <a href="/decisions.html">Questions</a>
+  <a href="/governance.html">Governance</a>
+  <a href="/next.html">Roadmap</a>
+</aside>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">Hitch Planning &middot; onboarding &middot; the grill</p>
+    <div class="mast-brand">
+      <span class="mast-mark" aria-hidden="true">
+        <svg viewBox="0 0 56 34" width="56" height="34">
+          <circle cx="37" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#2b4a3e" stroke-width="6.2"/>
+          <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
+        </svg>
+      </span>
+      <h1>The grill builds the record</h1>
+    </div>
+    <p class="dek">Onboarding is not a form. It is an opinionated interview that pressure-tests the couple, forces the trade-offs, and writes the resolved answers into the record the whole product reads from.</p>
+    <p class="byline">Kevin Holland &middot; July 2026</p>
+    <p class="record-line" data-record-line>rec · Sarah &amp; Marcus · Charleston · Oct 17 2026</p>
+    <div class="hub">
+      <a href="/">Live app <span class="arw">&rarr;</span></a>
+      <a href="/prd.html">The PRD <span class="arw">&rarr;</span></a>
+      <a href="https://github.com/hollandkevint/hitch">Source + evals <span class="arw">&rarr;</span></a>
+    </div>
+  </div>
+</div>
+
+<div class="mast-rule" aria-hidden="true"></div>
+
+<nav class="jump">
+  <div class="inner">
+    <a href="/prd.html">PRD</a>
+    <a href="/preread.html">Overview</a>
+    <a href="/">Demo</a>
+    <a href="/onboarding.html" style="color:var(--forest)">Onboarding</a>
+    <a href="/process.html">Process</a>
+    <a href="/architecture.html">Architecture</a>
+    <a href="/decisions.html">Questions</a>
+    <a href="/governance.html">Governance</a>
+    <a href="/next.html">Roadmap</a>
+  </div>
+</nav>
+
+<main>
+<section>
+  <p class="kicker">Part 1 of the planner OS &middot; system of record</p>
+  <h2>A sample grilled session</h2>
+  <p class="lead">ChatGPT would take the couple&rsquo;s wish list at face value and hand back a generic checklist. A senior planner does the opposite: she interviews, she pushes back, and she names the trade-off before it becomes a $9,000 surprise. Step through the same session the Hitch agent runs &mdash; one move at a time, each with a recommendation, every answer written to the record.</p>
+  <div class="grill-controls" role="group" aria-label="Walk the session">
+    <button id="grill-next" class="primary" type="button">Next move</button>
+    <button id="grill-all" type="button">Play all</button>
+    <button id="grill-restart" type="button">Restart</button>
+    <span class="grill-count" id="grill-count" aria-live="polite">1 / 6</span>
+  </div>
+
+  <div class="grill">
+    <div class="turn">
+      <p class="move">Frame &middot; get the real constraints</p>
+      <p class="agent"><span class="who">Hitch</span>Before I build anything, I need the constraints, not the mood board. You told me: <strong>$40,000 all-in, about 160 guests, black-tie, a Saturday evening in October, on the water in Charleston.</strong> Two of those five are going to fight. Let me show you exactly where, because it&rsquo;s cheaper to know now than in March.</p>
+      <p class="couple"><span class="who">Sarah &amp; Marcus</span>We figured $40K was generous. Go ahead.</p>
+      <p class="wrote"><code>brief: $40,000 &middot; target &asymp;160 &middot; black-tie &middot; Sat Oct 17 2026 &middot; Charleston harbor</code> &mdash; stated, unresolved</p>
+    </div>
+
+    <div class="turn">
+      <p class="move">Pressure &middot; name the contradiction</p>
+      <p class="agent"><span class="who">Hitch</span>Lowcountry Catering&rsquo;s plated black-tie minimum runs about $185 a head. 160 guests is <span class="hot">$29,600 &mdash; 74% of your budget on dinner alone,</span> before the venue, florals, photography, music, or your dress. The planners I&rsquo;ve watched keep catering near 40%. This isn&rsquo;t a florist problem or a band problem. It&rsquo;s a guest-count problem.<span class="rec"><b>Recommended</b>Hold black-tie and the harbor &mdash; that&rsquo;s the night you actually want &mdash; and cut the list to 120.</span></p>
+      <p class="couple"><span class="who">Sarah &amp; Marcus</span>120 feels small&hellip; but honestly we couldn&rsquo;t name the last 40 anyway.</p>
+      <p class="wrote"><code>guest_count: 160 &rarr; 120</code> &middot; <code>decision: guest-list &rarr; locked</code></p>
+    </div>
+
+    <div class="turn">
+      <p class="move">Map &middot; spend the room you just freed</p>
+      <p class="agent"><span class="who">Hitch</span>120 pulls catering to about $22,000 &mdash; 49%, livable. Now florals. You asked for hanging installations over every table. From Petal &amp; Stem that&rsquo;s $6,500&ndash;$8,000, roughly 18%; the norm is 8&ndash;10%.<span class="rec"><b>Recommended</b>One statement installation over the head table where the photos happen, low greenery everywhere else. Bank the $3,500 for the band you actually care about.</span></p>
+      <p class="couple"><span class="who">Sarah &amp; Marcus</span>Keep the big one over us. Done.</p>
+      <p class="wrote"><code>vendor: Petal &amp; Stem Florals &middot; scope: 1 installation + low greenery &middot; &asymp;$4,500</code> &middot; <code>decision: florals &rarr; locked</code></p>
+    </div>
+
+    <div class="turn">
+      <p class="move">Decide &middot; spend where it changes the night</p>
+      <p class="agent"><span class="who">Hitch</span>You ranked dancing above everything, twice. With the floral money moved over, an 8-piece band fits at about $8,000. A DJ saves you $5,000, but on a black-tie floor you will feel the difference.<span class="rec"><b>Recommended</b>The band. It&rsquo;s the one line where spending more actually changes the night &mdash; so it&rsquo;s the one place I&rsquo;d let you break the budget norm on purpose.</span></p>
+      <p class="couple"><span class="who">Sarah &amp; Marcus</span>Band. No question.</p>
+      <p class="wrote"><code>vendor: Music &middot; 8-piece band &middot; &asymp;$8,000 (20%, deliberate override)</code> &middot; <code>decision: music &rarr; locked</code></p>
+    </div>
+
+    <div class="turn">
+      <p class="move">Codify the dislikes &middot; the memory a chatbot loses</p>
+      <p class="agent"><span class="who">Hitch</span>Last thing, and I keep it forever: what do you <em>not</em> want, so no vendor talks you into it at 9pm three weeks out? You mentioned no receiving line and no bouquet toss.</p>
+      <p class="couple"><span class="who">Sarah &amp; Marcus</span>Right. Both make us cringe.</p>
+      <p class="wrote"><code>constraints: no receiving line &middot; no bouquet toss</code> &mdash; surfaced on every future timeline; any vendor who proposes them gets flagged</p>
+    </div>
+
+    <div class="turn">
+      <p class="move">The record &middot; not a summary, a row</p>
+      <div class="snap">
+        <p class="lbl">Onboarding snapshot &rarr; committed to the record</p>
+        <p class="rec-line">Sarah &amp; Marcus &middot; 120 guests &middot; black-tie &middot; Sat Oct 17 2026 &middot; Charleston harbor<br>Lowcountry Catering &middot; Petal &amp; Stem &middot; 8-piece band<br>3 decisions locked &middot; 2 standing constraints &middot; budget rebalanced to norm</p>
+        <p class="snap-links">This is the row the budget, the vendors, and the timeline all read from. <a href="/#record-depth">Watch the copilot act on it &rarr;</a> &middot; <a href="/next.html">How sequencing &amp; closeout extend it &rarr;</a></p>
+      </div>
+      <p class="agent"><span class="who">Hitch</span>That&rsquo;s the record &mdash; not a recap I&rsquo;ll forget next conversation, the row everything else reads from. From here, <strong>sequencing</strong> orders the deposits so nothing books out of order, and <strong>closeout</strong> reconciles what&rsquo;s done and owed and helps you invoice it. This is the part a general chatbot can&rsquo;t hold: it re-meets you every time. I don&rsquo;t.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">The ontology &middot; what the grill writes into</p>
+  <h2>The domain model a planner already carries</h2>
+  <p class="lead">The grill isn&rsquo;t chat. It writes into a model a seasoned planner keeps in her head &mdash; entities, sequencing lanes, and budget norms. This is the context a general model doesn&rsquo;t have and can&rsquo;t retain between conversations.</p>
+
+  <h3>Entities</h3>
+  <table>
+    <thead><tr><th>Entity</th><th>Holds</th><th>This wedding</th></tr></thead>
+    <tbody>
+      <tr><td><b>Wedding</b></td><td>date, city, guest_count, formality</td><td class="num">Oct 17 2026 &middot; Charleston &middot; 120 &middot; black-tie</td></tr>
+      <tr><td><b>Couple</b></td><td>wishes, dislikes, ranked priorities</td><td>dancing first; no receiving line</td></tr>
+      <tr><td><b>Budget line</b></td><td>category, floor %, ceiling %, committed</td><td class="num">Catering 40&ndash;50% &middot; $22,000</td></tr>
+      <tr><td><b>Vendor</b></td><td>category, deposit %, lead-time, state</td><td>Petal &amp; Stem &middot; 40% &middot; 12-wk &middot; contracted</td></tr>
+      <tr><td><b>Task</b></td><td>title, owner, due, status</td><td>Pay florist deposit &middot; open</td></tr>
+      <tr><td><b>Decision</b></td><td>question, recommendation, state</td><td>guest-list &middot; locked</td></tr>
+      <tr><td><b>Milestone</b></td><td>what, when (relative)</td><td>final headcount &middot; 2 weeks out</td></tr>
+      <tr><td><b>Guest party</b></td><td>name, size, RSVP</td><td>Henderson party &middot; pending</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Sequencing lanes</h3>
+  <ol class="lanes">
+    <li><b>Venue + date</b><span>Locked first &mdash; everything downstream is relative to them.</span></li>
+    <li><b>Catering headcount</b><span>Set by guest_count; drives the single biggest line.</span></li>
+    <li><b>Rentals</b><span>Follow headcount &mdash; tables, linens, place settings scale with it.</span></li>
+    <li><b>Florals</b><span>After the venue walk-through, once the room is known.</span></li>
+    <li><b>Attire</b><span>Ordered against an 8-week alteration floor, or it&rsquo;s a crisis.</span></li>
+    <li><b>Save-the-dates</b><span>6 months out &mdash; earlier is noise, later loses the block.</span></li>
+    <li><b>Final headcount</b><span>2 weeks out; locks catering and seating counts.</span></li>
+    <li><b>Seating</b><span>Last &mdash; it depends on everything above it.</span></li>
+  </ol>
+  <div class="callout">
+    <p class="lbl">Why the order is the product</p>
+    <p>&ldquo;What&rsquo;s next&rdquo; is real order, not a generic list. A change upstream (guest count) cascades down (catering, rentals, seating) on its own &mdash; the planner doesn&rsquo;t re-derive it and the couple can&rsquo;t book the florist before the room is known.</p>
+  </div>
+
+  <h3>Budget norms</h3>
+  <table>
+    <thead><tr><th>Category</th><th>Typical share</th><th>This wedding</th></tr></thead>
+    <tbody>
+      <tr><td>Catering</td><td class="num">40&ndash;50%</td><td class="num">$22,000 &middot; 49%</td></tr>
+      <tr><td>Venue</td><td class="num">10&ndash;15%</td><td class="num">included in harbor site</td></tr>
+      <tr><td>Photo / video</td><td class="num">10&ndash;12%</td><td class="num">held</td></tr>
+      <tr><td>Florals</td><td class="num">8&ndash;10%</td><td class="num">$4,500 &middot; 11%</td></tr>
+      <tr><td>Music</td><td class="num">8&ndash;10%</td><td class="num"><span class="hot">$8,000 &middot; 20%</span> &mdash; override</td></tr>
+      <tr><td>Attire</td><td class="num">~5%</td><td class="num">held</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <p class="lbl">Norms are defaults, not laws</p>
+    <p>The music line breaks the norm on purpose because the couple ranked dancing first. The model records the override <em>and the reason</em>, so a later reviewer sees a decision, not a mistake.</p>
+  </div>
+
+  <h3>State machines</h3>
+  <div class="machine"><span class="lbl">Decision</span>open <span class="arw">&rarr;</span> recommended <span class="arw">&rarr;</span> locked <span class="arw">&rarr;</span> invoiced</div>
+  <div class="machine"><span class="lbl">Vendor</span>prospect <span class="arw">&rarr;</span> quoted <span class="arw">&rarr;</span> deposit-held <span class="arw">&rarr;</span> contracted <span class="arw">&rarr;</span> paid <span class="arw">&rarr;</span> closed</div>
+  <div class="callout">
+    <p class="lbl">Closeout is a state walk</p>
+    <p>Part 3 walks every vendor to <code>paid &rarr; closed</code> and every decision to <code>invoiced</code>. That is what turns a plan into a settled, billable record &mdash; and what a chat transcript can never become.</p>
+  </div>
+
+  <blockquote class="pull">The deeper the model and the more opinionated the lanes, the less a generic chatbot can stand in. The moat isn&rsquo;t smarter answers. It&rsquo;s a record that remembers, sequences, and settles.<cite>The wedge</cite></blockquote>
+</section>
+
+<div class="colophon">
+  <p><strong>Hitch Planning</strong> &middot; the onboarding grill is deterministic here so it demos identically every run; the Demo/Agent toggle on the <a href="/">live app</a> is the seam where the same interview runs against a real model. The three-part planner OS &mdash; onboarding, sequencing, closeout &mdash; is laid out on the <a href="/prd.html">PRD</a> and <a href="/next.html">roadmap</a>. Written and built by Kevin Holland, July 2026.</p>
+</div>
+</main>
+<script>
+(function(){
+  var turns = [].slice.call(document.querySelectorAll('.grill .turn'));
+  if (turns.length < 2) return; // no-JS / single-turn: everything stays visible
+  var next = document.getElementById('grill-next');
+  var all = document.getElementById('grill-all');
+  var restart = document.getElementById('grill-restart');
+  var count = document.getElementById('grill-count');
+  var shown = 1;
+  function paint(){
+    turns.forEach(function(t, i){ t.hidden = i >= shown; });
+    count.textContent = shown + ' / ' + turns.length;
+    next.disabled = shown >= turns.length;
+  }
+  next.addEventListener('click', function(){
+    if (shown >= turns.length) return;
+    shown++; paint();
+    turns[shown - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  all.addEventListener('click', function(){ shown = turns.length; paint(); });
+  restart.addEventListener('click', function(){
+    shown = 1; paint();
+    turns[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  paint();
+})();
+</script>
+<script src="/site.js" defer></script>
+</body>
+</html>
