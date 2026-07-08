@@ -2,10 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "wedding-copilot",
+      "name": "hitch",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["/Users/kthkellogg/Documents/GitHub/wedding-copilot/server.js"],
-      "port": 3000
+      "runtimeArgs": ["server.js"],
+      "port": 3300,
+      "autoPort": true
     }
   ]
 }

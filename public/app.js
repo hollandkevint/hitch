@@ -176,6 +176,20 @@ async function executeApprove(action, confirmed) {
   renderAction(null);
   addMsg('bot', '✓ Done — your timeline is updated and the change is on the record.');
   await refresh(); // the writeback made visible: rows flip, planner audit trail gains an entry
+  stampRecord(confirmed ? 'high' : 'routine');
+}
+
+// The writeback moment, made physical: a rubber stamp lands on the timeline.
+// Terracotta only for the confirmed high-stakes commit (consequence rule).
+function stampRecord(kind) {
+  const host = document.querySelector('#couple-view section.timeline');
+  if (!host) return;
+  host.querySelectorAll('.stamp').forEach(n => n.remove());
+  const s = document.createElement('div');
+  s.className = 'stamp' + (kind === 'high' ? ' stamp-high' : '');
+  s.textContent = kind === 'high' ? 'Confirmed · recorded' : 'Recorded';
+  host.appendChild(s);
+  setTimeout(() => s.remove(), 2600);
 }
 
 // wire-up
