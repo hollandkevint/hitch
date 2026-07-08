@@ -52,7 +52,7 @@ const AGENT_URL = process.env.AGENT_BASE_URL || 'https://openrouter.ai/api/v1/ch
 const AGENT_TIMEOUT_MS = Number(process.env.AGENT_TIMEOUT_MS || 4000);
 // Runtime-mutable so the UI toggle can flip deterministic<->live in the room without a redeploy.
 // Seeded from the env default; can only go live when a key is actually present.
-let liveMode = LIVE_AGENT;
+let liveMode = LIVE_AGENT && !!AGENT_KEY;
 
 // ---------- schema + seed ----------
 
@@ -656,7 +656,7 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         await ready;
-        const data = body ? JSON.parse(body) : {};
+        const data = body ? (JSON.parse(body) || {}) : {};
         if (url.pathname === '/api/copilot') {
           // toggle off -> deterministic (bit-identical). toggle on -> LLM picks the tool,
           // and ANY failure/timeout degrades to copilot() for this turn. (wire-plan U2)

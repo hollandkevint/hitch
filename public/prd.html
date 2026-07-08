@@ -133,11 +133,12 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
   <a class="primary" href="/prd.html">PRD</a>
+  <a href="/preread.html">Overview</a>
   <a href="/">Demo</a>
   <a href="/process.html">Process</a>
-  <a href="/assumptions.html">Assumptions</a>
   <a href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
+  <a href="/governance.html">Governance</a>
   <a href="/next.html">Roadmap</a>
 </aside>
 
@@ -183,7 +184,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 <section>
   <h2>One page, one bet</h2>
   <p class="lead">The PRD is deliberately capped below 300 words: a complete, readable product bet with problem, evidence, solution, success, QA/evals, assumptions, scope, and team asks. The <a href="/">running prototype</a> and <a href="/process.html">process page</a> carry the rest of the proof.</p>
-  <p><strong>Problem.</strong> Usage is dropping: planners and their clients get better planning help from ChatGPT than from Hitch&rsquo;s static guest lists, seating, and to-dos. The planner pays for a record she babysits &mdash; she does the chasing and nudging, and it goes stale when anyone stops typing. Coordination, not creative work, caps how many weddings she can take.</p>
+  <p><strong>Problem.</strong> Usage is dropping: planners and their clients get better planning help from ChatGPT than from Hitch&rsquo;s static guest lists, seating, and to-dos. The planner pays for a record she babysits: she chases and nudges, and it goes stale when typing stops. Coordination, not creative work, caps how many weddings she can take.</p>
   <p><strong>Evidence.</strong> Interviews show thinking work leaving: &ldquo;what&rsquo;s next?&rdquo;, vendor follow-up, RSVP anxiety. ChatGPT advises generally but cannot see this wedding &mdash; who confirmed, what is late, what a change cascades to &mdash; and cannot act. A planner&rsquo;s memory does not scale; neither do her hours.</p>
   <p><strong>Solution (v1).</strong> Make the record work for the planner. The copilot in to-do/timeline watches live state and initiates: flags the late florist deposit, drafts the follow-up, chases open decisions. After approval it writes back: task done, timeline updated, vendor logged. Couples keep it fresh because it keeps their day on track and on budget; every action feeds the record the planner trusts. The record exposes governed, atomic actions &mdash; our copilot is the first agent allowed to use them.</p>
   <p><strong>Success.</strong> Primary: follow-ups drafted&rarr;approved per active wedding &mdash; work done instead of the planner. North star: weddings per planner without new headcount. Counter-metric: reversed writebacks; kill it if reversals stay above 15% after two iterations.</p>
@@ -194,6 +195,10 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <div class="callout">
     <p class="lbl">How to read it</p>
     <p>The product bet is a B2B2C data product: the planner buys capacity, the couple keeps the record true &mdash; like a CRM whose reps actually keep it updated &mdash; and the agent earns autonomy only by passing the QA/eval contract.</p>
+  </div>
+  <div class="callout">
+    <p class="lbl">Why not ChatGPT &mdash; the three-part planner OS</p>
+    <p>Generalized AI holds no durable memory of <em>this</em> couple and no opinionated lanes. The roadmap widens that gap in three sequenced parts: <strong>opinionated onboarding</strong> (a senior-planner interview &mdash; budget, wishes, dislikes &mdash; stored as connectable memory that surfaces the trade-off when a later decision collides with a stated constraint), <strong>sequencing</strong> (dependencies live in the record, so &ldquo;what&rsquo;s next&rdquo; is real order, not a generic checklist), and <strong>closeout</strong> (reconcile what&rsquo;s done and owed, then help invoice and settle each item). The deeper the context and the more opinionated the lanes, the less a generic model can stand in.</p>
   </div>
   <div class="proof-links" aria-label="Supporting surfaces for the PRD">
     <a href="/#record-depth">

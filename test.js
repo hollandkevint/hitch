@@ -1,4 +1,4 @@
-// The PRD's 5-point eval set, executed against the real server + real SQLite rows.
+// The PRD's 7-eval set, executed against the real server + real SQLite rows.
 // Run: node test.js  (starts its own server instance on :3100)
 // Live-agent gate: LIVE_AGENT=on OPENROUTER_API_KEY=... node test.js runs the same 7 evals
 // with a real model doing tool-selection — a green run is the gate for shipping the toggle on.
@@ -122,10 +122,10 @@ async function main() {
     // silently shrink. Known limit: aliasing a field into a local first evades
     // the pattern gate; the count floor catches wholesale removal.
     const src = fs.readFileSync('./public/app.js', 'utf8');
-    const raw = src.match(/\$\{\s*\(?\s*(?:t\.title|t\.vendor|t\.owner|a\.actor|a\.action|action\.label|action\.draft)\b[^}?]*\}/g);
+    const raw = src.match(/\$\{\s*\(?\s*(?:t\.title|t\.vendor|t\.owner|a\.actor|a\.action|action\.label|action\.draft|v\.name|v\.next_action|v\.category|v\.risk|planner\.name|planner\.company|planner\.capacity_bottleneck|b\.category)\b[^}?]*\}/g);
     assert(!raw, `unescaped render interpolation(s): ${raw && raw.join(', ')}`);
     const escCount = (src.match(/\besc\(/g) || []).length;
-    assert(escCount >= 8, `expected >= 8 esc() render sites, found ${escCount}`);
+    assert(escCount >= 20, `expected >= 20 esc() render sites, found ${escCount}`);
     await seed();
   });
 
@@ -199,18 +199,24 @@ async function main() {
     await seed();
   });
 
-  // Agent toggle (v2): the mode is runtime-mutable, but a keyless flip must never go live —
-  // that guardrail is what lets the UI toggle exist without a way to strand the demo.
-  await check('Agent toggle: defaults deterministic, keyless flip stays deterministic', async () => {
+  // Agent toggle (v2): runtime-mutable and key-gated. Branches on the observed key state so the
+  // suite is green both keyless (CI/local) AND with a key present (the documented live-gate run) —
+  // the prior version asserted keyless and went red under the very command its header prescribes.
+  await check('Agent toggle: runtime-mutable, key-gated, deterministic by default', async () => {
     const base = await api('/api/agent-mode');
     assert.strictEqual(base.status, 200, 'GET /api/agent-mode not ok');
     assert.strictEqual(base.data.live, false, 'agent mode should default deterministic');
-    assert.strictEqual(base.data.keyPresent, false, 'no OPENROUTER_API_KEY expected in test env');
-    const flip = await api('/api/agent-mode', { live: true });
-    assert.strictEqual(flip.data.live, false, 'keyless flip must stay deterministic');
-    const offRes = await api('/api/agent-mode', { live: false });
-    assert.strictEqual(offRes.data.live, false, 'explicit off should be deterministic');
-    // and the copilot path is still bit-identical deterministic after toggling
+    if (base.data.keyPresent) {
+      const on = await api('/api/agent-mode', { live: true });
+      assert.strictEqual(on.data.live, true, 'flip-on with a key present must go live');
+      const off = await api('/api/agent-mode', { live: false });
+      assert.strictEqual(off.data.live, false, 'flip-off returns deterministic');
+    } else {
+      const flip = await api('/api/agent-mode', { live: true });
+      assert.strictEqual(flip.data.live, false, 'keyless flip must stay deterministic');
+    }
+    // leave it deterministic, then confirm the copilot path is unchanged after toggling
+    await api('/api/agent-mode', { live: false });
     const { data } = await api('/api/copilot', { message: "What's left before the wedding?" });
     assert(/Pay florist deposit/.test(data.reply), 'deterministic copilot changed after toggle');
   });

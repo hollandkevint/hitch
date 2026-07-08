@@ -407,7 +407,7 @@ function renderConnectors() {
       <p class="connector-preview" hidden></p>
     </article>`).join('');
 }
-$('#connector-grid').addEventListener('click', e => {
+$('#connector-grid')?.addEventListener('click', e => {
   const btn = e.target.closest('.connect');
   if (!btn) return;
   const card = btn.closest('.connector');
@@ -421,7 +421,7 @@ $('#connector-grid').addEventListener('click', e => {
 // toggle can advertise the v2 swap without ever stranding the demo on a call that can't happen.
 async function initAgentToggle() {
   const box = $('#agent-live'), wrap = $('#agent-toggle'), label = $('#agent-mode-label');
-  if (!box || !wrap) return;
+  if (!box || !wrap || !label) return;
   const demo = $('#pole-demo'), agent = $('#pole-agent');
   const paint = ({ live, keyPresent }) => {
     const on = !!live && keyPresent;
@@ -461,7 +461,7 @@ $('#ask-form').onsubmit = async e => {
 };
 
 // Delegated: renderHints() rebuilds the chips on every refresh, so bind the container once.
-$('#hints').addEventListener('click', e => {
+$('#hints')?.addEventListener('click', e => {
   const btn = e.target.closest('.hint');
   if (!btn) return;
   e.preventDefault();

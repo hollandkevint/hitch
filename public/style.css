@@ -330,19 +330,11 @@ section.timeline { position: relative; }
 /* ---- U2: record depth over-budget emphasis ---- */
 .record-depth-grid p.over { color: #a54c26; font-weight: 600; }
 
-/* ---- U4: audit ledger — the copilot's own writes carry a forest ledger rule ---- */
-.audit li.write { border-left: 2px solid var(--forest); padding-left: 10px; margin-left: -12px; }
+/* ---- U4: audit ledger — the copilot's own writes carry a forest-wash ground (Hitch is speaking here) ---- */
+.audit li.write { background: var(--forest-soft); border-radius: 6px; padding-left: 8px; padding-right: 8px; }
 
-/* ---- U6: live-agent toggle in the copilot head ---- */
+/* ---- live-agent toggle sits in the copilot head ---- */
 .copilot-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.agent-toggle {
-  display: inline-flex; align-items: center; gap: 7px; cursor: pointer; margin-top: 4px;
-  font-family: var(--sans); font-size: 0.72rem; font-weight: 600; color: var(--muted);
-  letter-spacing: 0.02em; white-space: nowrap;
-}
-.agent-toggle input { accent-color: var(--forest); cursor: pointer; }
-.agent-toggle.disabled { cursor: not-allowed; opacity: 0.7; }
-.agent-toggle.disabled input { cursor: not-allowed; }
 
 /* ---- U5: connector mockups ---- */
 .connectors { grid-column: 1 / -1; }
@@ -401,7 +393,7 @@ section.timeline { position: relative; }
 .gantt-bar { display: block; height: 100%; min-width: 6px; border-radius: 999px; background: var(--forest); }
 .gantt-bar.late { background: #a54c26; }
 .gantt-bar.later { background: #9db3a4; }
-.gantt-bar.wedding { background: repeating-linear-gradient(45deg, var(--terracotta), var(--terracotta) 4px, #c56b45 4px, #c56b45 8px); }
+.gantt-bar.wedding { background: repeating-linear-gradient(45deg, var(--forest), var(--forest) 4px, #3a5c4d 4px, #3a5c4d 8px); }
 
 .budget-total { font-size: 0.9rem; margin-bottom: 8px; }
 .budget-total strong { font-family: var(--display); font-weight: 600; }
