@@ -1,3 +1,5 @@
 wedding.db
 node_modules/
 .DS_Store
+docs/
+.claude/
