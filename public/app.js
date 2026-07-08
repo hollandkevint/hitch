@@ -29,6 +29,10 @@ async function refresh() {
   const weeksOut = Math.max(0, Math.round((new Date(wedding.wedding_date) - Date.now()) / (7 * 86400000)));
   $('#wedding-meta').textContent =
     `${wedding.couple} · ${new Date(wedding.wedding_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · ${wedding.city} · ${wedding.guest_count} guests · ${weeksOut} weeks out`;
+  // triplicate form chrome: the record's own file number (initials + wedding MMDD)
+  const initials = wedding.couple.split(/\s*&\s*/).map(n => n[0]).join('');
+  $('#record-no').textContent =
+    `record № ${initials}-${wedding.wedding_date.slice(5).replace('-', '')} · ${wedding.city}`;
 
   const open = tasks.filter(t => t.status === 'open');
   const done = tasks.filter(t => t.status === 'done');
@@ -36,11 +40,12 @@ async function refresh() {
   $('#task-list').innerHTML = open.map(t => `
     <li data-task-id="${t.id}">
       <span>${esc(t.title)}${t.vendor ? `<span class="vendor">${esc(t.vendor)}</span>` : ''}</span>
+      <span class="leader" aria-hidden="true"></span>
       <span class="due">${fmtDue(t.due_date)}
         ${daysLate(t.due_date) > 0 ? `<span class="overdue-badge">⚠ ${daysLate(t.due_date)}d late</span>` : ''}
       </span>
     </li>`).join('');
-  $('#done-list').innerHTML = done.map(t => `<li>${esc(t.title)}</li>`).join('');
+  $('#done-list').innerHTML = done.map(t => `<li><span>${esc(t.title)}</span></li>`).join('');
 
   $('#planner-task-list').innerHTML = tasks.map(t => `
     <li>

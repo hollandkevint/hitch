@@ -34,6 +34,7 @@
     <div>
       <h1>Hitch Planning</h1>
       <p id="wedding-meta" class="meta"></p>
+      <p id="record-no" class="record-no" aria-hidden="true"></p>
     </div>
   </div>
   <div class="view-toggle" role="tablist" aria-label="Switch view">
@@ -76,6 +77,7 @@
 </main>
 
 <main id="planner-view" role="tabpanel" aria-labelledby="btn-planner" hidden>
+  <p class="copy-label">Carbon copy · planner · writes require approval</p>
   <section class="timeline">
     <h2>All tasks <span class="badge readonly">read-only</span></h2>
     <ul id="planner-task-list"></ul>
@@ -98,5 +100,6 @@
 </div>
 
 <script src="./app.js"></script>
+<script src="/site.js" defer></script>
 </body>
 </html>

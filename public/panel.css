@@ -405,3 +405,121 @@ body::after {
   }
   .panel-main { padding-bottom: 120px; }
 }
+
+/* ── the working-record fidelity layer (triplicate / keepers / buro) ── */
+
+/* logbook record line: the site reads the live record (site.js fills it) */
+.record-line {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a8c0b2;
+  margin-top: 14px;
+}
+
+/* thick-thin logbook rule under the masthead */
+.mast-rule {
+  height: 2px;
+  border-top: 3px solid #26302b;
+  border-bottom: 1px solid #26302b;
+}
+
+/* pull quote: typography only, no tint, no border */
+.pull {
+  font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.45;
+  font-style: normal;
+  max-width: 36ch;
+  margin: 46px auto;
+  color: #26302b;
+}
+.pull cite {
+  display: block;
+  margin-top: 12px;
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #706d65;
+}
+
+/* press G: the 8pt baseline made visible (site.js) */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom, rgba(43,74,62,0.13) 0 1px, transparent 1px 8px);
+}
+.grid-overlay::after {
+  content: "8pt baseline · press G to hide";
+  position: fixed;
+  right: 14px;
+  bottom: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2b4a3e;
+  background: #fffdf9;
+  border: 1px solid #e9e2d6;
+  border-radius: 6px;
+  padding: 5px 9px;
+}
+
+/* panel hub: numbered index rows replace the card grid */
+.panel-index {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.panel-index a {
+  display: grid;
+  grid-template-columns: 52px 200px 1fr 22px;
+  align-items: baseline;
+  gap: 18px;
+  padding: 17px 10px 16px;
+  border-top: 1px solid #e9e2d6;
+  color: #26302b;
+  text-decoration: none;
+  transition: background 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.panel-index li:last-child a { border-bottom: 1px solid #26302b; }
+.panel-index li:first-child a { border-top: 3px solid #26302b; }
+.panel-index .ix {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #706d65;
+}
+.panel-index b {
+  font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+.panel-index .ix-what {
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 0.88rem;
+  color: #706d65;
+  line-height: 1.45;
+}
+.panel-index .arw {
+  color: #2b4a3e;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.panel-index a:hover { background: #fffdf9; }
+.panel-index a:hover b { color: #2b4a3e; }
+.panel-index a:hover .arw { transform: translateX(4px); }
+.panel-index a:focus-visible { outline: 2px solid #2b4a3e; outline-offset: -2px; }
+@media (max-width: 760px) {
+  .panel-index a { grid-template-columns: 40px 1fr 18px; }
+  .panel-index .ix-what { grid-column: 2 / 4; }
+}

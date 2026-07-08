@@ -283,3 +283,29 @@ section.timeline { position: relative; }
 @media (min-width: 1321px) and (max-width: 1560px) {
   main, .record-depth { max-width: min(1180px, calc(100vw - 360px)); }
 }
+
+/* ── the working-record fidelity layer (triplicate form physicality) ── */
+:root { --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* the record's own file number, in the form's voice */
+.record-no {
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--muted); margin-top: 3px;
+}
+
+/* dot leaders: the printed form's dotted line between entry and date */
+.timeline li .leader {
+  flex: 1; min-width: 24px; margin: 0 2px;
+  border-bottom: 1px dotted #cfc7b8; transform: translateY(-4px);
+}
+
+/* planner view is the carbon copy: same record, second sheet */
+#planner-view .copy-label {
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--muted);
+  grid-column: 1 / -1; margin: -8px 0 -12px 2px;
+}
+#planner-view section { background: #fcf9f1; }
+
+/* audit trail keeps logbook time */
+.audit time { font-family: var(--mono); letter-spacing: 0.04em; }

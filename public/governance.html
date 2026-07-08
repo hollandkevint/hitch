@@ -187,12 +187,15 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     </div>
     <p class="dek">Value times reversibility decides what flows and what gets gated. Audit makes it attributable; the eval set makes it a release gate; the counter-metric makes trust measurable.</p>
     <p class="byline">Kevin Holland &middot; July 2026</p>
+    <p class="record-line" data-record-line>rec · Sarah &amp; Marcus · Charleston · Oct 17 2026</p>
     <div class="hub">
       <a href="/">Live app <span class="arw">&rarr;</span></a>
       <a href="https://github.com/hollandkevint/hitch">Source + evals <span class="arw">&rarr;</span></a>
     </div>
   </div>
 </div>
+
+<div class="mast-rule" aria-hidden="true"></div>
 
 <nav class="jump">
   <div class="inner">
@@ -251,6 +254,8 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     <p>Wrap multi-row writes in a transaction (the approve loop runs a couple of synchronous statements; I'd make that atomic). Add per-actor auth plus idempotency keys, so the audit trail is trustworthy across parties and a replayed approval can't double-apply. Re-validate live state at commit time, not just at draft time, and carry the user's edits to a draft through the approve payload. Move <code>pendingActions</code> from an in-memory Map to durable storage so a restart doesn't drop a draft mid-approval. Delete the demo reset endpoint, and run the propose path without write permissions at all. And treat PII in the record as a first-class access-control boundary, not a column. I know where the seams are because I built it, not spec'd it.</p>
   </div>
 </section>
+<blockquote class="pull">&ldquo;No write without approval; high-stakes writes name their downstream cascade first.&rdquo;<cite>The governing rule</cite></blockquote>
+
 
 <section>
   <p class="kicker">At scale</p>
@@ -306,5 +311,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   });
 })();
 </script>
+<script src="/site.js" defer></script>
 </body>
 </html>
