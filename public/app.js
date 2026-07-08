@@ -41,15 +41,9 @@ async function refresh() {
   const open = tasks.filter(t => t.status === 'open');
   const done = tasks.filter(t => t.status === 'done');
 
-  $('#task-list').innerHTML = open.map(t => `
-    <li data-task-id="${t.id}">
-      <span>${esc(t.title)}${t.vendor ? `<span class="vendor">${esc(t.vendor)}</span>` : ''}</span>
-      <span class="leader" aria-hidden="true"></span>
-      <span class="due">${fmtDue(t.due_date)}
-        ${daysLate(t.due_date) > 0 ? `<span class="overdue-badge">⚠ ${daysLate(t.due_date)}d late</span>` : ''}
-      </span>
-    </li>`).join('');
+  $('#task-list').innerHTML = timelineHtml(open);
   $('#done-list').innerHTML = done.map(t => `<li><span>${esc(t.title)}</span></li>`).join('');
+  renderHints(open);
 
   $('#planner-task-list').innerHTML = tasks.map(t => `
     <li>
@@ -57,7 +51,7 @@ async function refresh() {
       <span class="due">${fmtDue(t.due_date)}</span>
     </li>`).join('');
   $('#audit-list').innerHTML = audit.map(a => `
-    <li><span class="actor ${actorClass(a.actor)}">${esc(a.actor)}</span> ${esc(a.action)}
+    <li class="${a.actor === 'hitch' ? 'write' : ''}"><span class="actor ${actorClass(a.actor)}">${esc(a.actor)}</span> ${esc(a.action)}
       <time>${new Date(a.at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</time>
     </li>`).join('');
   renderRecordDepth({ planner, vendors, guests, budget });
@@ -90,30 +84,69 @@ function money(n) {
   return Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 }
 
+// U1: the flat list becomes a phased sequence. Buckets by calendar-day distance so the
+// most-overdue work reads first and the timeline tells the planner where attention goes next.
+function timelineHtml(open) {
+  const row = t => `
+    <li data-task-id="${t.id}">
+      <span>${esc(t.title)}${t.vendor ? `<span class="vendor">${esc(t.vendor)}</span>` : ''}${t.owner === 'planner' ? '<span class="owner-tag">planner</span>' : ''}</span>
+      <span class="leader" aria-hidden="true"></span>
+      <span class="due">${fmtDue(t.due_date)}${daysLate(t.due_date) > 0 ? `<span class="overdue-badge">⚠ ${daysLate(t.due_date)}d late</span>` : ''}</span>
+    </li>`;
+  const phases = [
+    { label: 'Overdue', match: d => d > 0 },
+    { label: 'This week', match: d => d <= 0 && d >= -7 },
+    { label: 'Next 3 weeks', match: d => d < -7 && d >= -21 },
+    { label: 'Later', match: d => d < -21 },
+  ];
+  const byDue = [...open].sort((a, b) => daysLate(b.due_date) - daysLate(a.due_date));
+  return phases.map(p => {
+    const items = byDue.filter(t => p.match(daysLate(t.due_date)));
+    if (!items.length) return '';
+    return `<li class="phase" aria-hidden="true">${p.label}<span class="phase-count">${items.length}</span></li>` + items.map(row).join('');
+  }).join('');
+}
+
+// U3: the ask sequences off the real record. The first chip chases the most-overdue item,
+// the second the next one due — so clicking down the chips walks the timeline in order.
+function renderHints(open) {
+  const host = $('#hints');
+  if (!host) return;
+  const byDue = [...open].sort((a, b) => daysLate(b.due_date) - daysLate(a.due_date));
+  const chips = ["What's left before the wedding?"];
+  if (byDue[0]) chips.push(`Mark ${byDue[0].title} done`);
+  chips.push('The Hendersons declined', 'Should we cut the guest list?', 'What flowers are trending?');
+  host.innerHTML = 'Try: ' + chips.map(c => `<button type="button" class="hint">${esc(c)}</button>`).join(' · ');
+}
+
 function renderRecordDepth({ planner, vendors, guests, budget }) {
   const slot = $('#record-depth-grid');
   if (!slot || !planner) return;
-  const highRisk = vendors.filter(v => v.risk === 'high').map(v => `${v.name}: ${v.next_action}`);
-  const pendingGuests = guests.filter(g => g.rsvp_status === 'pending');
-  const overCommitted = budget.filter(b => Number(b.variance) > 0)
-    .reduce((sum, b) => sum + Number(b.variance), 0);
+  const highRisk = vendors.filter(v => v.risk === 'high');
+  const rsvp = { confirmed: 0, pending: 0, declined: 0 };
+  guests.forEach(g => { rsvp[g.rsvp_status] = (rsvp[g.rsvp_status] || 0) + 1; });
+  const totalEst = budget.reduce((s, b) => s + Number(b.estimate), 0);
+  const totalCom = budget.reduce((s, b) => s + Number(b.committed), 0);
+  const variance = budget.reduce((s, b) => s + Number(b.variance), 0);
   slot.innerHTML = `
     <article>
-      <h3>Planner</h3>
-      <p><strong>${esc(planner.name)}</strong>, ${esc(planner.company)}</p>
-      <p>${esc(planner.active_weddings)} active weddings · bottleneck: ${esc(planner.capacity_bottleneck)}</p>
+      <h3>Planner capacity</h3>
+      <p><strong>${esc(planner.active_weddings)}</strong> active weddings</p>
+      <p>${esc(planner.name)}, ${esc(planner.company)} · bottleneck: ${esc(planner.capacity_bottleneck)}</p>
+    </article>
+    <article>
+      <h3>Budget</h3>
+      <p><strong>${money(totalCom)}</strong> committed of ${money(totalEst)} est.</p>
+      <p class="${variance > 0 ? 'over' : ''}">${variance > 0 ? money(variance) + ' over estimate' : 'within estimate'} · catering + rentals track headcount.</p>
+    </article>
+    <article>
+      <h3>Guests</h3>
+      <p><strong>${rsvp.confirmed}</strong> confirmed · ${rsvp.pending} pending · ${rsvp.declined} declined</p>
+      <p>${guests.length} parties on the record · a decline cascades to caterer headcount.</p>
     </article>
     <article>
       <h3>Vendor risk</h3>
-      <p>${highRisk.length ? highRisk.map(esc).join('<br>') : 'No high-risk vendors.'}</p>
-    </article>
-    <article>
-      <h3>Guest state</h3>
-      <p>${esc(pendingGuests.length)} of ${esc(guests.length)} parties pending · Henderson decline would cascade to caterer headcount and table 4.</p>
-    </article>
-    <article>
-      <h3>Budget dependency</h3>
-      <p>${money(overCommitted)} committed over estimate · catering and rentals depend on headcount/seating.</p>
+      <p>${highRisk.length ? highRisk.map(v => `${esc(v.name)} — ${esc(v.next_action)}`).join('<br>') : 'No high-risk vendors.'}</p>
     </article>`;
 }
 
@@ -230,6 +263,17 @@ async function executeApprove(action, confirmed) {
     : '✓ Done — your timeline is updated and the change is on the record.');
   await refresh(); // the writeback made visible: rows flip, planner audit trail gains an entry
   stampRecord(confirmed ? 'high' : 'routine');
+  suggestNext(); // sequence the ask: name the next item due so the copilot walks the timeline
+}
+
+// U3: after acting, point at the next item in due order — the ask follows the record forward.
+async function suggestNext() {
+  try {
+    const { tasks } = await api('/api/state');
+    const next = (tasks || []).filter(t => t.status === 'open')
+      .sort((a, b) => daysLate(b.due_date) - daysLate(a.due_date))[0];
+    if (next) addMsg('bot', `Next up: ${next.title}${next.vendor ? ' (' + next.vendor + ')' : ''}, due ${fmtDue(next.due_date)}. Want me to take it?`);
+  } catch { /* the timeline already refreshed; the nudge is a bonus, not load-bearing */ }
 }
 
 // The writeback moment, made physical: a rubber stamp lands on the timeline.
@@ -253,6 +297,53 @@ function clearStamps() {
   document.querySelectorAll('.stamp').forEach(n => n.remove());
 }
 
+// U5: mockup connectors — the v2 "connect your world" story made tangible. No network, no auth;
+// clicking shows what the source would sync so the panel sees the shape, not a real integration.
+const CONNECTORS = [
+  { id: 'email', name: 'Email', via: 'Gmail · Outlook', syncs: 'Pull vendor threads and RSVP replies straight into the timeline.', preview: 'Would watch 3 vendor threads and file replies as record updates — each one still approved before it writes.' },
+  { id: 'invoicing', name: 'Invoicing', via: 'QuickBooks · Rock Paper Coin', syncs: 'Track every vendor deposit and balance due against the budget.', preview: 'Would surface the Petal & Stem deposit and 4 upcoming balances as dated tasks on the timeline.' },
+  { id: 'budget', name: 'Budget', via: 'Google Sheets', syncs: 'Keep line items and variance live instead of a stale export.', preview: 'Would two-way 6 budget lines so committed-vs-estimate stays current as vendors are paid.' },
+  { id: 'calendar', name: 'Timeline', via: 'Google Calendar', syncs: 'Put the wedding timeline on everyone’s calendar, both directions.', preview: 'Would publish 6 milestones and read back reschedules from the couple’s calendar.' },
+];
+function renderConnectors() {
+  const grid = $('#connector-grid');
+  if (!grid) return;
+  grid.innerHTML = CONNECTORS.map(c => `
+    <article class="connector" data-id="${esc(c.id)}">
+      <h3>${esc(c.name)} <span class="via">${esc(c.via)}</span></h3>
+      <p>${esc(c.syncs)}</p>
+      <button type="button" class="connect">Connect</button>
+      <p class="connector-preview" hidden></p>
+    </article>`).join('');
+}
+$('#connector-grid').addEventListener('click', e => {
+  const btn = e.target.closest('.connect');
+  if (!btn) return;
+  const card = btn.closest('.connector');
+  const c = CONNECTORS.find(x => x.id === card.dataset.id);
+  const prev = card.querySelector('.connector-preview');
+  if (prev.hidden) { prev.textContent = c.preview; prev.hidden = false; btn.textContent = 'Preview · v2'; card.classList.add('previewing'); }
+  else { prev.hidden = true; btn.textContent = 'Connect'; card.classList.remove('previewing'); }
+});
+
+// U6: reflect + control the live-agent mode. Keyless → disabled with an honest label, so the
+// toggle can advertise the v2 swap without ever stranding the demo on a call that can't happen.
+async function initAgentToggle() {
+  const box = $('#agent-live'), wrap = $('#agent-toggle'), label = $('#agent-mode-label');
+  if (!box || !wrap) return;
+  const paint = ({ live, keyPresent }) => {
+    box.checked = !!live;
+    box.disabled = !keyPresent;
+    wrap.classList.toggle('disabled', !keyPresent);
+    label.textContent = keyPresent ? (live ? 'Live agent · v2' : 'Deterministic') : 'Live needs API key';
+  };
+  try { paint(await api('/api/agent-mode')); } catch { paint({ live: false, keyPresent: false }); }
+  box.onchange = async () => {
+    try { paint(await api('/api/agent-mode', { live: box.checked })); }
+    catch { paint({ live: false, keyPresent: false }); }
+  };
+}
+
 // wire-up
 $('#ask-form').onsubmit = async e => {
   e.preventDefault();
@@ -273,9 +364,12 @@ $('#ask-form').onsubmit = async e => {
   }
 };
 
-document.querySelectorAll('.hint').forEach(a => a.onclick = e => {
+// Delegated: renderHints() rebuilds the chips on every refresh, so bind the container once.
+$('#hints').addEventListener('click', e => {
+  const btn = e.target.closest('.hint');
+  if (!btn) return;
   e.preventDefault();
-  $('#ask-input').value = a.textContent;
+  $('#ask-input').value = btn.textContent;
   $('#ask-form').requestSubmit();
 });
 
@@ -325,4 +419,6 @@ console.log(
   'color:#26302b;'
 );
 
+renderConnectors();
+initAgentToggle();
 refresh();

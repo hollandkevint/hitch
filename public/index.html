@@ -59,7 +59,13 @@
   </section>
 
   <section class="copilot">
-    <h2>Ask Hitch <span class="badge">knows your wedding</span></h2>
+    <div class="copilot-head">
+      <h2>Ask Hitch <span class="badge">knows your wedding</span></h2>
+      <label class="agent-toggle" id="agent-toggle" title="Deterministic by default; flip to route tool-selection through the v2 model behind the same gate and evals.">
+        <input type="checkbox" id="agent-live">
+        <span id="agent-mode-label">Deterministic</span>
+      </label>
+    </div>
     <div id="chat" role="log" aria-live="polite"></div>
     <div id="action-slot" aria-live="polite"></div>
     <form id="ask-form">
@@ -67,11 +73,15 @@
              placeholder='Try: "What&#39;s left before the wedding?"'>
       <button type="submit">Ask</button>
     </form>
-    <p class="hints">Try: <button type="button" class="hint">What's left before the wedding?</button> ·
-      <button type="button" class="hint">Mark the caterer tasting done</button> ·
-      <button type="button" class="hint">The Hendersons declined</button> ·
-      <button type="button" class="hint">Should we cut the guest list?</button> ·
-      <button type="button" class="hint">What flowers are trending?</button></p>
+    <p class="hints" id="hints"></p>
+  </section>
+
+  <section class="connectors" aria-label="Connect your systems">
+    <div class="copilot-head">
+      <h2>Connect your world <span class="badge">roadmap · v2</span></h2>
+    </div>
+    <p class="connectors-sub">Bring the couple's real context into the record. Everything still writes through the same governed gate — the connectors add sources, not new ways to change the record unapproved.</p>
+    <div class="connector-grid" id="connector-grid"></div>
   </section>
 </main>
 

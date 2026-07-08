@@ -50,6 +50,9 @@ const AGENT_MODEL = process.env.AGENT_MODEL || 'anthropic/claude-sonnet-5';
 const AGENT_KEY = process.env.OPENROUTER_API_KEY; // Anthropic-direct is the documented alt, not wired
 const AGENT_URL = process.env.AGENT_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions';
 const AGENT_TIMEOUT_MS = Number(process.env.AGENT_TIMEOUT_MS || 4000);
+// Runtime-mutable so the UI toggle can flip deterministic<->live in the room without a redeploy.
+// Seeded from the env default; can only go live when a key is actually present.
+let liveMode = LIVE_AGENT;
 
 // ---------- schema + seed ----------
 
@@ -643,6 +646,10 @@ const server = http.createServer(async (req, res) => {
     await ready;
     return json(res, 200, await getPanelState());
   }
+  if (url.pathname === '/api/agent-mode' && req.method === 'GET') {
+    // UI reads the current engine mode on load. keyPresent gates whether the toggle can go live.
+    return json(res, 200, { live: liveMode, keyPresent: !!AGENT_KEY });
+  }
   if (req.method === 'POST') {
     let body = '';
     req.on('data', c => (body += c));
@@ -654,13 +661,19 @@ const server = http.createServer(async (req, res) => {
           // toggle off -> deterministic (bit-identical). toggle on -> LLM picks the tool,
           // and ANY failure/timeout degrades to copilot() for this turn. (wire-plan U2)
           const msg = data.message || '';
-          const engine = LIVE_AGENT && AGENT_KEY ? copilotLLM : copilot;
+          const engine = liveMode && AGENT_KEY ? copilotLLM : copilot;
           let out;
           // Don't swallow silently: the live path's whole point is to prove the swap worked,
           // so surface a failed model turn in the log while still degrading to deterministic.
           try { out = await engine(msg); }
           catch (e) { if (engine === copilotLLM) console.error('[LIVE_AGENT] LLM turn failed, using deterministic:', e.message); out = await copilot(msg); }
           return json(res, 200, out);
+        }
+        if (url.pathname === '/api/agent-mode') {
+          // Only go live when a key is actually present — a keyless flip stays deterministic,
+          // so the toggle can never strand the demo waiting on a model call that can't happen.
+          liveMode = !!data.live && !!AGENT_KEY;
+          return json(res, 200, { live: liveMode, keyPresent: !!AGENT_KEY });
         }
         if (url.pathname === '/api/agent-preview') return json(res, 200, await agentPreview(data.scenario));
         if (url.pathname === '/api/approve') {

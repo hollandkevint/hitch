@@ -309,3 +309,67 @@ section.timeline { position: relative; }
 
 /* audit trail keeps logbook time */
 .audit time { font-family: var(--mono); letter-spacing: 0.04em; }
+
+/* ---- U1: phased timeline ---- */
+.timeline li.phase {
+  display: block; border-bottom: none; padding: 18px 2px 4px;
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em;
+  font-weight: 600; color: var(--muted);
+}
+.timeline li.phase:first-child { padding-top: 2px; }
+.phase-count {
+  margin-left: 8px; background: var(--forest-soft); color: var(--forest);
+  border-radius: 999px; padding: 1px 8px; font-size: 0.66rem;
+}
+.owner-tag {
+  display: inline-block; margin-left: 8px; font-size: 0.64rem; font-weight: 600;
+  color: #67645c; background: #f1ede5; border-radius: 999px; padding: 1px 8px;
+  text-transform: uppercase; letter-spacing: 0.04em; vertical-align: 1px; font-family: var(--sans);
+}
+
+/* ---- U2: record depth over-budget emphasis ---- */
+.record-depth-grid p.over { color: #a54c26; font-weight: 600; }
+
+/* ---- U4: audit ledger — the copilot's own writes carry a forest ledger rule ---- */
+.audit li.write { border-left: 2px solid var(--forest); padding-left: 10px; margin-left: -12px; }
+
+/* ---- U6: live-agent toggle in the copilot head ---- */
+.copilot-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.agent-toggle {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer; margin-top: 4px;
+  font-family: var(--sans); font-size: 0.72rem; font-weight: 600; color: var(--muted);
+  letter-spacing: 0.02em; white-space: nowrap;
+}
+.agent-toggle input { accent-color: var(--forest); cursor: pointer; }
+.agent-toggle.disabled { cursor: not-allowed; opacity: 0.7; }
+.agent-toggle.disabled input { cursor: not-allowed; }
+
+/* ---- U5: connector mockups ---- */
+.connectors { grid-column: 1 / -1; }
+.connectors-sub { color: var(--muted); font-size: 0.86rem; margin: -6px 0 18px; line-height: 1.5; }
+.connector-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.connector {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--ivory);
+  padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 8px;
+}
+.connector h3 {
+  font-family: var(--serif); font-size: 0.98rem; font-weight: 600; color: var(--ink);
+  text-transform: none; letter-spacing: 0; margin: 0;
+}
+.connector .via {
+  display: block; margin-top: 2px; font-family: var(--sans); font-weight: 500;
+  font-size: 0.72rem; color: var(--muted); letter-spacing: 0.02em; text-transform: none;
+}
+.connector > p { font-size: 0.82rem; color: var(--ink); line-height: 1.45; margin: 0; flex: 1; }
+.connector .connect {
+  align-self: flex-start; background: var(--paper); color: var(--forest); border: 1px solid #cddbd2;
+  padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+}
+.connector .connect:hover { background: var(--forest-soft); }
+.connector.previewing { background: var(--forest-soft); }
+.connector-preview {
+  font-family: var(--serif); font-style: italic; font-size: 0.78rem;
+  color: var(--forest); line-height: 1.45; margin: 0;
+}
+@media (max-width: 820px) { .connector-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .connector-grid { grid-template-columns: 1fr; } }

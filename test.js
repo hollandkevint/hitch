@@ -199,6 +199,22 @@ async function main() {
     await seed();
   });
 
+  // Agent toggle (v2): the mode is runtime-mutable, but a keyless flip must never go live —
+  // that guardrail is what lets the UI toggle exist without a way to strand the demo.
+  await check('Agent toggle: defaults deterministic, keyless flip stays deterministic', async () => {
+    const base = await api('/api/agent-mode');
+    assert.strictEqual(base.status, 200, 'GET /api/agent-mode not ok');
+    assert.strictEqual(base.data.live, false, 'agent mode should default deterministic');
+    assert.strictEqual(base.data.keyPresent, false, 'no OPENROUTER_API_KEY expected in test env');
+    const flip = await api('/api/agent-mode', { live: true });
+    assert.strictEqual(flip.data.live, false, 'keyless flip must stay deterministic');
+    const offRes = await api('/api/agent-mode', { live: false });
+    assert.strictEqual(offRes.data.live, false, 'explicit off should be deterministic');
+    // and the copilot path is still bit-identical deterministic after toggling
+    const { data } = await api('/api/copilot', { message: "What's left before the wedding?" });
+    assert(/Pay florist deposit/.test(data.reply), 'deterministic copilot changed after toggle');
+  });
+
   await seed(); // leave a clean demo state
   server.close();
   console.log(results.join('\n'));
