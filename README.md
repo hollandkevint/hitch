@@ -4,13 +4,13 @@
 
 Hitch is a reference implementation of **governed agent writeback**: an assistant that is grounded in a real system-of-record, drafts the next action from live rows, and writes back only through an approval gate the server enforces. The thesis it demonstrates: **the harness is the product, and the model is swappable.** Most agent failures are harness-layer failures, so the layer worth engineering is the one that decides what the agent may read, what it may write, and what proof gates the write.
 
-Zero dependencies. One `server.js` (node:http + node:sqlite), one vanilla-JS page, one eval file.
+One `server.js` (node:http), one vanilla-JS page, one eval file. Storage sits behind a small adapter: Postgres when `DATABASE_URL` is set (Railway), zero-dependency `node:sqlite` otherwise.
 
 ## Run
 
 ```
 node server.js        # Node 22+. -> http://localhost:3000
-node test.js          # 7 binary evals against the live API + real SQLite rows
+node test.js          # 7 binary evals against the live API + real rows (SQLite locally; set DATABASE_URL to run them against Postgres)
 ```
 
 Reset demo state anytime: `curl -X POST localhost:3000/api/reset`, or delete `wedding.db` and restart.
@@ -27,7 +27,7 @@ Reset demo state anytime: `curl -X POST localhost:3000/api/reset`, or delete `we
 
 ## Architecture
 
-- `wedding` / `tasks` / `audit_log` tables in SQLite. The writeback flips a real row, not component memory.
+- `wedding` / `tasks` / `audit_log` tables in the database. The writeback flips a real row, not component memory.
 - The assistant is a deterministic server-side rule engine over live SELECTs; every reply string is interpolated from rows. In production this becomes an LLM with atomic read/update tools, and the **approval-only write path plus the eval gate stay exactly where they are.** That governed layer is model-agnostic by construction.
 - Write policy = value x reversibility. Low-stakes task completion applies after one approval; anything touching shared vendor-facing state requires the confirm gate. Enforced server-side.
 - The evals in `test.js` are the acceptance harness: binary, fast, and run against the real API and real rows. Swap the rule engine for a model and the same evals still decide whether the system is safe to ship.
@@ -39,7 +39,7 @@ Reset demo state anytime: `curl -X POST localhost:3000/api/reset`, or delete `we
 
 ## Provenance
 
-Built July 2026 as a working prototype, then hardened for release. Deliberately a zero-dependency Node app rather than a hosted builder stack: localhost + SQLite is more reliable in a live demo (no network, no build step, restarts clean) and keeps every layer inspectable.
+Built July 2026 as a working prototype, then hardened for release. Deliberately a minimal Node app rather than a hosted builder stack: every layer stays inspectable, local runs need no install (node:sqlite), and production runs on managed Postgres behind the same adapter.
 
 ## License
 

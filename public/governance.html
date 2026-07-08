@@ -161,7 +161,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
   <a href="/process.html">Process</a>
@@ -169,7 +168,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <a href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
   <a href="/next.html">Roadmap</a>
-  <a href="/">Back to demo</a>
 </aside>
 
 <div class="masthead">
@@ -266,7 +264,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <p>Trust is measured, not asserted: the reversal counter-metric (writebacks the user reverses or edits) is instrumented first, and the PRD carries a kill test &mdash; reversals above ~15% after two iterations and writeback gets pulled while grounded answers stay. Governance that can&rsquo;t lose an argument with its own data isn&rsquo;t governance.</p>
 </section>
 <div class="colophon">
-  <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>
+  <p><strong>Hitch Planning</strong> &middot; a working prototype: one <code>server.js</code> on <code>node:http</code>, storage behind a two-line adapter &mdash; Postgres on Railway in production, zero-dependency <code>node:sqlite</code> locally. One command runs it, one more runs the eval set against either backend. Written and built by Kevin Holland, July 2026.</p>
 </div>
 </main>
 <script>

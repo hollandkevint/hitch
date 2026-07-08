@@ -295,6 +295,15 @@ $('#confirm-yes').onclick = async () => {
   if (action) await executeApprove(action, true);
 };
 
+// presenter control: restore the clean seed and start the session over
+const resetBtn = $('#reset-demo');
+if (resetBtn) resetBtn.onclick = async () => {
+  resetBtn.disabled = true;
+  resetBtn.textContent = 'Resetting…';
+  try { await api('/api/reset', {}); } catch { /* reload shows real state either way */ }
+  location.reload();
+};
+
 // for the reader who opens DevTools: the interesting parts, mapped
 console.log(
   '%cHitch%c — the record acts.\n' +

@@ -256,7 +256,6 @@ body.process-page.js-reveal section.in {
 </head>
 <body class="process-page">
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
   <a class="primary" href="/process.html">Process</a>
@@ -264,7 +263,6 @@ body.process-page.js-reveal section.in {
   <a href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
   <a href="/next.html">Roadmap</a>
-  <a href="/">Back to demo</a>
 </aside>
 
 <div class="masthead">
@@ -323,7 +321,7 @@ body.process-page.js-reveal section.in {
   <p class="pull">The point is not that the prototype is perfect. The point is that the PRD, evals, architecture, and demo are the same product argument.</p>
 </section>
 <div class="colophon">
-  <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>
+  <p><strong>Hitch Planning</strong> &middot; a working prototype: one <code>server.js</code> on <code>node:http</code>, storage behind a two-line adapter &mdash; Postgres on Railway in production, zero-dependency <code>node:sqlite</code> locally. One command runs it, one more runs the eval set against either backend. Written and built by Kevin Holland, July 2026.</p>
 </div>
 </main>
 <script>

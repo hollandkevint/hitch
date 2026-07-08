@@ -175,7 +175,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
   <a href="/process.html">Process</a>
@@ -183,7 +182,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <a class="primary" href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
   <a href="/next.html">Roadmap</a>
-  <a href="/">Back to demo</a>
 </aside>
 
 <div class="masthead">
@@ -277,7 +275,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     </div>
     <div class="step gatekey">
       <div class="st-name"><code>POST /api/approve</code> — the only write path</div>
-      <div class="st-body">Looks the action up <em>by id</em> (an id the client didn't author). High-stakes actions are refused server-side unless <code>confirmed === true</code>. Then it runs the declared writes and nothing else: a <code>complete_task</code> is an <code>UPDATE tasks SET status='done'</code>; an <code>update_guest_count</code> adjusts the wedding row; every commit appends an <code>audit_log</code> entry. The pending action is deleted. Refresh and the change holds, it's a real <code>node:sqlite</code> row, not component state.</div>
+      <div class="st-body">Looks the action up <em>by id</em> (an id the client didn't author). High-stakes actions are refused server-side unless <code>confirmed === true</code>. Then it runs the declared writes and nothing else: a <code>complete_task</code> is an <code>UPDATE tasks SET status='done'</code>; an <code>update_guest_count</code> adjusts the wedding row; every commit appends an <code>audit_log</code> entry. The pending action is deleted. Refresh and the change holds, it's a real database row (Postgres in production, <code>node:sqlite</code> locally), not component state.</div>
     </div>
   </div>
 
@@ -340,7 +338,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   </ul>
 </section>
 <div class="colophon">
-  <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>
+  <p><strong>Hitch Planning</strong> &middot; a working prototype: one <code>server.js</code> on <code>node:http</code>, storage behind a two-line adapter &mdash; Postgres on Railway in production, zero-dependency <code>node:sqlite</code> locally. One command runs it, one more runs the eval set against either backend. Written and built by Kevin Holland, July 2026.</p>
 </div>
 </main>
 <script>

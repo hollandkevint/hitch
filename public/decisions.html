@@ -132,7 +132,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
   <a href="/process.html">Process</a>
@@ -140,7 +139,6 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <a href="/architecture.html">Architecture</a>
   <a class="primary" href="/decisions.html">Questions</a>
   <a href="/next.html">Roadmap</a>
-  <a href="/">Back to demo</a>
 </aside>
 
 <div class="masthead">
@@ -211,7 +209,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <p class="lead">"If this were our Hitch team and we had two weeks for v2, which one thing would you change before expanding the agent: the approval UX, the data model, the eval harness, or the go-to-market wedge?"</p>
 </section>
 <div class="colophon">
-  <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>
+  <p><strong>Hitch Planning</strong> &middot; a working prototype: one <code>server.js</code> on <code>node:http</code>, storage behind a two-line adapter &mdash; Postgres on Railway in production, zero-dependency <code>node:sqlite</code> locally. One command runs it, one more runs the eval set against either backend. Written and built by Kevin Holland, July 2026.</p>
 </div>
 </main>
 <script>

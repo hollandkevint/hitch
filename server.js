@@ -5,15 +5,44 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { DatabaseSync } = require('node:sqlite');
 
-const DB_PATH = path.join(__dirname, 'wedding.db');
-const db = new DatabaseSync(DB_PATH);
+// ---------- storage adapter ----------
+// Postgres when DATABASE_URL is set (Railway); node:sqlite otherwise (local runs
+// stay zero-dependency). One async surface either way, so everything below has a
+// single code path and the eval suite exercises whichever backend is configured.
+const PG_URL = process.env.DATABASE_URL;
+let store;
+if (PG_URL) {
+  const { Pool } = require('pg'); // lazy: only production needs the dependency
+  const pool = new Pool({
+    connectionString: PG_URL,
+    // Railway's internal network is plaintext; the public proxy wants TLS
+    ssl: /railway\.internal|localhost|127\.0\.0\.1/.test(PG_URL) ? false : { rejectUnauthorized: false },
+  });
+  const translate = sql => { let n = 0; return sql.replace(/\?/g, () => `$${++n}`); };
+  store = {
+    dialect: 'postgres',
+    exec: sql => pool.query(sql).then(() => {}),
+    run: (sql, ...p) => pool.query(translate(sql), p).then(() => {}),
+    get: (sql, ...p) => pool.query(translate(sql), p).then(r => r.rows[0]),
+    all: (sql, ...p) => pool.query(translate(sql), p).then(r => r.rows),
+  };
+} else {
+  const { DatabaseSync } = require('node:sqlite');
+  const db = new DatabaseSync(path.join(__dirname, 'wedding.db'));
+  store = {
+    dialect: 'sqlite',
+    exec: async sql => db.exec(sql),
+    run: async (sql, ...p) => db.prepare(sql).run(...p),
+    get: async (sql, ...p) => db.prepare(sql).get(...p),
+    all: async (sql, ...p) => db.prepare(sql).all(...p),
+  };
+}
 
 // ---------- schema + seed ----------
 
-function initSchema() {
-  db.exec(`
+async function initSchema() {
+  let schema = `
     CREATE TABLE IF NOT EXISTS wedding (
       id INTEGER PRIMARY KEY, couple TEXT, wedding_date TEXT, city TEXT, guest_count INTEGER
     );
@@ -81,7 +110,11 @@ function initSchema() {
       v1_decision TEXT NOT NULL,
       trigger_to_revisit TEXT NOT NULL
     );
-  `);
+  `;
+  if (store.dialect === 'postgres') {
+    schema = schema.replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY');
+  }
+  await store.exec(schema);
 }
 
 function daysFromToday(n) {
@@ -90,8 +123,8 @@ function daysFromToday(n) {
   return d.toISOString().slice(0, 10);
 }
 
-function seed() {
-  db.exec(`
+async function seed() {
+  await store.exec(`
     DELETE FROM wedding;
     DELETE FROM tasks;
     DELETE FROM audit_log;
@@ -102,29 +135,32 @@ function seed() {
     DELETE FROM assumptions;
     DELETE FROM ideas;
   `);
-  db.prepare('INSERT INTO wedding (id, couple, wedding_date, city, guest_count) VALUES (1, ?, ?, ?, ?)')
-    .run('Sarah & Marcus', '2026-10-17', 'Charleston', 120);
-  const ins = db.prepare(
-    'INSERT INTO tasks (title, due_date, owner, vendor, status, updated_at) VALUES (?, ?, ?, ?, ?, ?)');
+  await store.run('INSERT INTO wedding (id, couple, wedding_date, city, guest_count) VALUES (1, ?, ?, ?, ?)',
+    'Sarah & Marcus', '2026-10-17', 'Charleston', 120);
+  const insTask = 'INSERT INTO tasks (title, due_date, owner, vendor, status, updated_at) VALUES (?, ?, ?, ?, ?, ?)';
   const now = new Date().toISOString();
   // ponytail: due dates computed relative to today so "6 days late" stays true whenever the demo runs
-  ins.run('Pay florist deposit', daysFromToday(-6), 'couple', 'Petal & Stem Florals', 'open', now);
-  ins.run('Confirm venue walkthrough', daysFromToday(-1), 'couple', 'The Cedar Room', 'open', now);
-  ins.run('Follow up on 14 unanswered RSVPs', daysFromToday(3), 'couple', null, 'open', now);
-  ins.run('Book caterer tasting', daysFromToday(9), 'couple', 'Lowcountry Catering Co.', 'open', now);
-  ins.run('Send planner the final song list', daysFromToday(14), 'couple', 'Charleston Sound DJ', 'open', now);
-  ins.run('Order welcome bags', daysFromToday(21), 'planner', null, 'open', now);
-  ins.run('Confirm hotel room block', daysFromToday(-20), 'planner', 'The Restoration Hotel', 'done', now);
-  seedSyntheticContext();
-  audit('planner', 'Seeded wedding record (7 tasks) for Sarah & Marcus');
+  const rows = [
+    ['Pay florist deposit', daysFromToday(-6), 'couple', 'Petal & Stem Florals', 'open', now],
+    ['Confirm venue walkthrough', daysFromToday(-1), 'couple', 'The Cedar Room', 'open', now],
+    ['Follow up on 14 unanswered RSVPs', daysFromToday(3), 'couple', null, 'open', now],
+    ['Book caterer tasting', daysFromToday(9), 'couple', 'Lowcountry Catering Co.', 'open', now],
+    ['Send planner the final song list', daysFromToday(14), 'couple', 'Charleston Sound DJ', 'open', now],
+    ['Order welcome bags', daysFromToday(21), 'planner', null, 'open', now],
+    ['Confirm hotel room block', daysFromToday(-20), 'planner', 'The Restoration Hotel', 'done', now],
+  ];
+  for (const r of rows) await store.run(insTask, ...r);
+  await seedSyntheticContext();
+  await audit('planner', 'Seeded wedding record (7 tasks) for Sarah & Marcus');
 }
 
-function seedSyntheticContext() {
-  db.prepare(`
+async function seedSyntheticContext() {
+  await store.run(`
     INSERT INTO planner_profile
       (id, name, company, market, active_weddings, pays_for_hitch, capacity_bottleneck)
       VALUES (1, ?, ?, ?, ?, ?, ?)
-  `).run(
+  `,
+    
     'Amelia Hart',
     'Harbor & Ivory Events',
     'Charleston',
@@ -133,11 +169,12 @@ function seedSyntheticContext() {
     'Client and vendor coordination across too many channels'
   );
 
-  const vendor = db.prepare(`
+  const vendorSql = `
     INSERT INTO vendors (category, name, status, next_action, contract_amount, risk)
     VALUES (?, ?, ?, ?, ?, ?)
-  `);
-  [
+  `;
+  for (const row of [
+
     ['Venue', 'The Cedar Room', 'walkthrough pending', 'Confirm walkthrough and floor-plan lock', 18200, 'medium'],
     ['Florist', 'Petal & Stem Florals', 'deposit overdue', 'Draft deposit follow-up', 7400, 'high'],
     ['Caterer', 'Lowcountry Catering Co.', 'tasting open', 'Book tasting and confirm headcount policy', 21600, 'high'],
@@ -145,26 +182,28 @@ function seedSyntheticContext() {
     ['Hotel block', 'The Restoration Hotel', 'confirmed', 'Monitor pickup threshold', 0, 'low'],
     ['Rentals', 'King Street Rentals', 'quote pending', 'Compare chair upgrade quote', 6200, 'medium'],
     ['Photographer', 'Lena Brooks Photography', 'timeline draft needed', 'Share ceremony timing', 5300, 'medium'],
-  ].forEach(row => vendor.run(...row));
+  ]) await store.run(vendorSql, ...row);
 
-  const guest = db.prepare(`
+  const guestSql = `
     INSERT INTO guests (party_name, relationship, party_size, rsvp_status, table_preference, constraint_notes)
     VALUES (?, ?, ?, ?, ?, ?)
-  `);
-  [
+  `;
+  for (const row of [
+
     ['Henderson party', 'college friends', 2, 'pending', 'near dance floor', 'A decline would move caterer headcount and table 4 balance'],
     ['Rivera family', 'bride family', 5, 'confirmed', 'family table', 'Two vegetarian meals'],
     ['Marcus work group', 'groom colleagues', 8, 'pending', 'grouped together', 'Three unanswered RSVPs'],
     ['Aunt Elaine', 'bride family', 1, 'confirmed', 'away from speakers', 'Mobility support'],
     ['Patel party', 'neighbors', 4, 'pending', 'no preference', 'Child meal count unknown'],
     ['College table', 'friends', 10, 'confirmed', 'near bar', 'High energy table'],
-  ].forEach(row => guest.run(...row));
+  ]) await store.run(guestSql, ...row);
 
-  const budget = db.prepare(`
+  const budgetSql = `
     INSERT INTO budget_items (category, estimate, committed, variance, dependency)
     VALUES (?, ?, ?, ?, ?)
-  `);
-  [
+  `;
+  for (const row of [
+
     ['Catering', 21000, 21600, 600, 'Final headcount and tasting selection'],
     ['Florals', 6800, 7400, 600, 'Deposit must clear before centerpiece hold'],
     ['Venue', 18000, 18200, 200, 'Walkthrough locks floor plan'],
@@ -172,69 +211,68 @@ function seedSyntheticContext() {
     ['Music', 3000, 2800, -200, 'Final song list'],
     ['Hotel block', 0, 0, 0, 'Pickup threshold only'],
     ['Welcome bags', 2400, 0, -2400, 'Guest count and hotel pickup'],
-  ].forEach(row => budget.run(...row));
+  ]) await store.run(budgetSql, ...row);
 
-  const assumption = db.prepare(`
+  const assumptionSql = `
     INSERT INTO assumptions (key, assumption, why_it_matters, risk_if_wrong, first_signal)
     VALUES (?, ?, ?, ?, ?)
-  `);
-  [
+  `;
+  for (const row of [
+
     ['planner-as-buyer', 'The planner pays and administers; the couple creates the usage wedge.', 'Positioning, permissions, and packaging need to sell planner capacity while feeling useful to couples.', 'If couple-paid, onboarding and pricing move toward consumer wedding planning instead of planner workflow.', 'Planner asks for multi-wedding controls, client-seat permissions, or business reporting.'],
     ['weekly-engagement', 'To-do and timeline work creates weekly return behavior before the wedding.', 'The v1 wedge must address usage drop, not just create a flashy planning moment.', 'If engagement is concentrated near wedding week, seating or guest workflows may outrank timeline.', 'Weekly active planning sessions do not improve after launch.'],
     ['approval-tolerance', 'Users will approve grounded writes when the footprint is explicit.', 'Writeback is the moat; too much friction collapses the value, too little control erodes trust.', 'If approvals feel like work, users stay in read-only advice mode.', 'Approval rate misses target or users repeatedly edit before approving.'],
     ['record-freshness', 'The shared wedding record is current enough to ground action.', 'A data product is only as good as its source-of-truth contract.', 'If planners maintain truth elsewhere, Hitch becomes another stale dashboard.', 'Planner corrections rise or vendors contradict the record.'],
     ['role-policy', 'Planner, couple, and vendor-adjacent data need different visibility before v2 autonomy.', 'B2B2C trust depends on actor-aware permissions, not one blended chat context.', 'The agent exposes private planner notes or lets the wrong actor approve a write.', 'Panel asks for per-actor auth before deeper agents.'],
     ['reversal-trust', 'Reversed or edited writebacks measure trust erosion.', 'Trust needs a counter-metric that can kill autonomy.', 'If reversals are invisible, the agent can degrade quietly.', 'Writebacks reversed exceeds 15% after two iterations.'],
-  ].forEach(row => assumption.run(...row));
+  ]) await store.run(assumptionSql, ...row);
 
-  const idea = db.prepare(`
+  const ideaSql = `
     INSERT INTO ideas (key, idea, v1_decision, trigger_to_revisit)
     VALUES (?, ?, ?, ?)
-  `);
-  [
+  `;
+  for (const row of [
+
     ['generic-inspiration', 'Generic inspiration and trend advice', 'Ceded to ChatGPT/Pinterest in v1.', 'Revisit only if record-aware inspiration becomes differentiated.'],
     ['seating-copilot', 'Seating copilot', 'Deferred because it is episodic, not weekly.', 'Revisit when timeline loop lifts engagement and guest data is reliable.'],
     ['guest-list-copilot', 'Guest and RSVP copilot', 'Deferred behind to-do/timeline writeback.', 'Revisit when planner needs headcount automation and per-actor auth is ready.'],
     ['vendor-agent', 'Vendor follow-up automation beyond drafted messages', 'Deferred until role policy, approval audit, and vendor identity are stronger.', 'Revisit when planner trust and vendor communication logs are reliable.'],
     ['planner-white-label', 'White-label planner packaging', 'Deferred to v2 offering.', 'Revisit when planner-side retention and audit trust are proven.'],
     ['registry-thank-you', 'Registry gaps and thank-you follow-up', 'Roadmap after wedding-day planning.', 'Revisit when the record extends past the event into household setup.'],
-  ].forEach(row => idea.run(...row));
+  ]) await store.run(ideaSql, ...row);
 }
 
-function audit(actor, action) {
-  db.prepare('INSERT INTO audit_log (actor, action, at) VALUES (?, ?, ?)')
-    .run(actor, action, new Date().toISOString());
+async function audit(actor, action) {
+  await store.run('INSERT INTO audit_log (actor, action, at) VALUES (?, ?, ?)',
+    actor, action, new Date().toISOString());
 }
 
-initSchema();
-if (
-  !db.prepare('SELECT COUNT(*) AS n FROM wedding').get().n ||
-  !db.prepare('SELECT COUNT(*) AS n FROM planner_profile').get().n
-) seed();
+// Startup is async now (the adapter is); every request awaits `ready` first.
+const ready = (async () => {
+  await initSchema();
+  const w = await store.get('SELECT COUNT(*) AS n FROM wedding');
+  const p = await store.get('SELECT COUNT(*) AS n FROM planner_profile');
+  if (!Number(w && w.n) || !Number(p && p.n)) await seed();
+})();
 
 // ---------- data access ----------
 
-const getWedding = () => db.prepare('SELECT * FROM wedding WHERE id = 1').get();
-const getTasks = () => db.prepare('SELECT * FROM tasks ORDER BY due_date').all();
-const getAudit = () => db.prepare('SELECT * FROM audit_log ORDER BY id DESC LIMIT 20').all();
-const getPlanner = () => db.prepare('SELECT * FROM planner_profile WHERE id = 1').get();
-const getVendors = () => db.prepare('SELECT * FROM vendors ORDER BY id').all();
-const getGuests = () => db.prepare('SELECT * FROM guests ORDER BY id').all();
-const getBudget = () => db.prepare('SELECT * FROM budget_items ORDER BY id').all();
-const getAssumptions = () => db.prepare('SELECT * FROM assumptions ORDER BY id').all();
-const getIdeas = () => db.prepare('SELECT * FROM ideas ORDER BY id').all();
-const getPanelState = () => ({
-  wedding: getWedding(),
-  tasks: getTasks(),
-  audit: getAudit(),
-  planner: getPlanner(),
-  vendors: getVendors(),
-  guests: getGuests(),
-  budget: getBudget(),
-  assumptions: getAssumptions(),
-  ideas: getIdeas(),
-});
-const openTasks = () => getTasks().filter(t => t.status === 'open');
+const getWedding = () => store.get('SELECT * FROM wedding WHERE id = 1');
+const getTasks = () => store.all('SELECT * FROM tasks ORDER BY due_date');
+const getAudit = () => store.all('SELECT * FROM audit_log ORDER BY id DESC LIMIT 20');
+const getPlanner = () => store.get('SELECT * FROM planner_profile WHERE id = 1');
+const getVendors = () => store.all('SELECT * FROM vendors ORDER BY id');
+const getGuests = () => store.all('SELECT * FROM guests ORDER BY id');
+const getBudget = () => store.all('SELECT * FROM budget_items ORDER BY id');
+const getAssumptions = () => store.all('SELECT * FROM assumptions ORDER BY id');
+const getIdeas = () => store.all('SELECT * FROM ideas ORDER BY id');
+const getPanelState = async () => {
+  const [wedding, tasks, audit, planner, vendors, guests, budget, assumptions, ideas] =
+    await Promise.all([getWedding(), getTasks(), getAudit(), getPlanner(), getVendors(),
+      getGuests(), getBudget(), getAssumptions(), getIdeas()]);
+  return { wedding, tasks, audit, planner, vendors, guests, budget, assumptions, ideas };
+};
+const openTasks = async () => (await getTasks()).filter(t => t.status === 'open');
 const fmtDate = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US',
   { month: 'long', day: 'numeric', year: 'numeric' });
 // Calendar-day difference, timezone-independent: the server (UTC on Railway) and
@@ -261,10 +299,10 @@ function draftAction(kind, label, stakes, draft, writes, extra = {}) {
 
 // ---------- the copilot rule engine (grounded: every reply is built from live rows) ----------
 
-function copilot(message) {
+async function copilot(message) {
   const m = message.toLowerCase();
-  const w = getWedding();
-  const open = openTasks();
+  const w = await getWedding();
+  const open = await openTasks();
 
   // Intent: "what's left?" — the hero path
   if (/what'?s left|whats left|remaining|what do we|what's next|to.?do|status/.test(m)) {
@@ -311,7 +349,7 @@ function copilot(message) {
   // Deliberately narrow: only decline-shaped language drafts this write. Mentioning a
   // guest, a table, or the count is not a decline.
   if (/declin|rsvp.*\b(no|out|regret)/.test(m)) {
-    const caterer = getTasks().find(t => /cater/i.test(t.vendor || ''))?.vendor || 'your caterer';
+    const caterer = (await getTasks()).find(t => /cater/i.test(t.vendor || ''))?.vendor || 'your caterer';
     return {
       reply: `That changes your guest count from ${w.guest_count} to ${w.guest_count - 2}, which changes the headcount ${caterer} bills against. I can record it, but this one needs your explicit confirmation.`,
       action: draftAction('rsvp_decline', `Record decline (−2 guests) and update caterer headcount`, 'high', null,
@@ -366,7 +404,7 @@ function copilot(message) {
     .filter(x => x.length >= 4 && !STOP.has(x));
   const asked = new Set(tokenize(m));
   if (asked.size) {
-    const mentioned = getTasks().filter(t =>
+    const mentioned = (await getTasks()).filter(t =>
       tokenize(`${t.title} ${t.vendor || ''}`).some(tok => asked.has(tok)));
     if (mentioned.length === 1) {
       const t = mentioned[0];
@@ -397,7 +435,7 @@ function copilot(message) {
 }
 
 // The only write path. High-stakes actions require confirmed:true. (evals 3, 4)
-function approveAction(id, confirmed) {
+async function approveAction(id, confirmed) {
   const action = pendingActions.get(id);
   if (!action) return { error: 'Unknown or expired action', status: 404 };
   if (action.stakes === 'high' && !confirmed) {
@@ -406,21 +444,21 @@ function approveAction(id, confirmed) {
   const now = new Date().toISOString();
   for (const wr of action.writes) {
     if (wr.type === 'complete_task') {
-      db.prepare("UPDATE tasks SET status = 'done', updated_at = ? WHERE id = ?").run(now, wr.taskId);
-      audit('hitch', `Marked "${wr.title}" done (approved by couple)`);
+      await store.run("UPDATE tasks SET status = 'done', updated_at = ? WHERE id = ?", now, wr.taskId);
+      await audit('hitch', `Marked "${wr.title}" done (approved by couple)`);
     } else if (wr.type === 'update_guest_count') {
-      db.prepare('UPDATE wedding SET guest_count = guest_count + ? WHERE id = 1').run(wr.delta);
-      audit('hitch', `Updated guest count by ${wr.delta} (RSVP decline, confirmed by couple)`);
+      await store.run('UPDATE wedding SET guest_count = guest_count + ? WHERE id = 1', wr.delta);
+      await audit('hitch', `Updated guest count by ${wr.delta} (RSVP decline, confirmed by couple)`);
     } else if (wr.type === 'log_only') {
-      audit('hitch', wr.note);
+      await audit('hitch', wr.note);
     }
   }
   pendingActions.delete(id);
   return { ok: true };
 }
 
-function agentPreview(scenario = 'hendersons_declined') {
-  const state = getPanelState();
+async function agentPreview(scenario = 'hendersons_declined') {
+  const state = await getPanelState();
   const hendersons = state.guests.find(g => /Henderson/i.test(g.party_name));
   const caterer = state.vendors.find(v => v.category === 'Caterer');
   const rentals = state.vendors.find(v => v.category === 'Rentals');
@@ -512,24 +550,30 @@ function json(res, code, obj) {
   res.end(JSON.stringify(obj));
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/api/state') {
-    return json(res, 200, getPanelState());
+    await ready;
+    return json(res, 200, await getPanelState());
   }
   if (req.method === 'POST') {
     let body = '';
     req.on('data', c => (body += c));
-    req.on('end', () => {
-      const data = body ? JSON.parse(body) : {};
-      if (url.pathname === '/api/copilot') return json(res, 200, copilot(data.message || ''));
-      if (url.pathname === '/api/agent-preview') return json(res, 200, agentPreview(data.scenario));
-      if (url.pathname === '/api/approve') {
-        const r = approveAction(data.id, !!data.confirmed);
-        return json(res, r.status || 200, r);
+    req.on('end', async () => {
+      try {
+        await ready;
+        const data = body ? JSON.parse(body) : {};
+        if (url.pathname === '/api/copilot') return json(res, 200, await copilot(data.message || ''));
+        if (url.pathname === '/api/agent-preview') return json(res, 200, await agentPreview(data.scenario));
+        if (url.pathname === '/api/approve') {
+          const r = await approveAction(data.id, !!data.confirmed);
+          return json(res, r.status || 200, r);
+        }
+        if (url.pathname === '/api/reset') { await seed(); return json(res, 200, { ok: true }); }
+        json(res, 404, { error: 'not found' });
+      } catch (e) {
+        json(res, 500, { error: 'server error' });
       }
-      if (url.pathname === '/api/reset') { seed(); return json(res, 200, { ok: true }); }
-      json(res, 404, { error: 'not found' });
     });
     return;
   }
@@ -551,9 +595,9 @@ const server = http.createServer((req, res) => {
 
 // Test seam: seed one extra task without handing out the raw db handle —
 // the approval path stays the only write path the app itself exposes.
-function insertTask({ title, due_date = '2026-09-01', owner = 'couple', status = 'open' }) {
-  db.prepare('INSERT INTO tasks (title, due_date, owner, status, updated_at) VALUES (?, ?, ?, ?, ?)')
-    .run(title, due_date, owner, status, new Date().toISOString());
+async function insertTask({ title, due_date = '2026-09-01', owner = 'couple', status = 'open' }) {
+  await store.run('INSERT INTO tasks (title, due_date, owner, status, updated_at) VALUES (?, ?, ?, ?, ?)',
+    title, due_date, owner, status, new Date().toISOString());
 }
 
 if (require.main === module) {
@@ -562,4 +606,4 @@ if (require.main === module) {
   const port = process.env.PORT || 3000;
   server.listen(port, () => console.log(`Hitch Planning → http://localhost:${port}`));
 }
-module.exports = { server, copilot, approveAction, seed, getWedding, getTasks, getAudit, insertTask };
+module.exports = { server, copilot, approveAction, seed, getWedding, getTasks, getAudit, insertTask, ready, store };

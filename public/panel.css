@@ -523,3 +523,36 @@ body::after {
   .panel-index a { grid-template-columns: 40px 1fr 18px; }
   .panel-index .ix-what { grid-column: 2 / 4; }
 }
+
+/* presenter control: quiet, separated from navigation by a rule */
+.rail-reset {
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  padding: 7px 9px;
+  border: none;
+  border-top: 1px solid #e9e2d6;
+  border-radius: 0 0 8px 8px;
+  background: none;
+  color: #706d65;
+  text-align: left;
+  cursor: pointer;
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rail-reset:hover { color: #2b4a3e; background: #e8efe9; }
+.rail-reset:focus-visible { outline: 2px solid #2b4a3e; outline-offset: 1px; }
+
+@media (max-width: 1320px) {
+  .rail-reset {
+    margin-top: 0;
+    border-top: none;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.62rem;
+    padding: 8px 3px;
+  }
+}
