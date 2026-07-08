@@ -464,7 +464,7 @@ function agentPreview(scenario = 'hendersons_declined') {
 
 // ---------- http ----------
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
 
 function json(res, code, obj) {
   res.writeHead(code, { 'Content-Type': 'application/json' });
