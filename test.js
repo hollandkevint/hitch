@@ -4,7 +4,7 @@
 // with a real model doing tool-selection — a green run is the gate for shipping the toggle on.
 const assert = require('node:assert');
 const fs = require('node:fs');
-const { server, getTasks, getWedding, seed, insertTask, ready } = require('./server.js');
+const { server, copilot, ROUTE, getTasks, getWedding, seed, insertTask, ready } = require('./server.js');
 
 const BASE = 'http://localhost:3100';
 const api = async (path, body) => {
@@ -169,6 +169,34 @@ async function main() {
     assert.deepStrictEqual(after.data.wedding, before.data.wedding, 'preview mutated wedding');
     assert.deepStrictEqual(after.data.tasks, before.data.tasks, 'preview mutated tasks');
     assert.deepStrictEqual(after.data.audit, before.data.audit, 'preview mutated audit');
+  });
+
+  // ROUTE contract (OFFLINE, no model/network): the live-agent path classifies to a tool name,
+  // then ROUTE re-drives copilot() via canned strings. This pins that mapping so a future edit to
+  // copilot()'s intent regexes can't silently break the LLM path — the one seam with no other test.
+  await check('ROUTE contract: every tool routes to the intended copilot branch (offline)', async () => {
+    await seed();
+    const r = async (tool, args) => copilot(ROUTE[tool](args || {}));
+    const left = await r('answer_whats_left');
+    assert(left.action && /Pay florist deposit/.test(left.reply), "answer_whats_left missed the what's-left branch");
+    const done = await r('complete_task', { task: 'caterer tasting' });
+    assert(done.action && done.action.kind === 'complete' && /caterer tasting/i.test(done.reply), 'complete_task did not draft a completion');
+    // empty task must NOT draft a wrong-task completion (guarded regression)
+    const emptyDone = await r('complete_task', {});
+    assert.strictEqual(emptyDone.action, null, 'empty complete_task drafted an action against the wrong task');
+    const look = await r('lookup_task', { task: 'florist' });
+    assert(/Pay florist deposit/.test(look.reply) && look.action === null, 'lookup_task did not ground read-only');
+    const decline = await r('record_rsvp_decline');
+    assert(decline.action && decline.action.stakes === 'high', 'record_rsvp_decline did not draft the high-stakes action');
+    const count = await r('guest_count');
+    assert(/\b120\b/.test(count.reply) && count.action === null, 'guest_count did not answer from the record');
+    const judge = await r('frame_judgment', {});
+    assert(judge.action === null && /120 guests/.test(judge.reply), 'frame_judgment did not frame without writing');
+    const overwhelmed = await r('frame_judgment', { overwhelmed: true });
+    assert(overwhelmed.action === null && /normal|evening|overwhelm/i.test(overwhelmed.reply), 'frame_judgment(overwhelmed) missed the steady-counsel branch');
+    const off = await r('handoff');
+    assert(off.action === null && /ChatGPT|Pinterest/.test(off.reply), 'handoff did not hand off cleanly');
+    await seed();
   });
 
   await seed(); // leave a clean demo state

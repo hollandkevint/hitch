@@ -310,7 +310,8 @@ function draftAction(kind, label, stakes, draft, writes, extra = {}) {
 }
 
 // ---------- the copilot rule engine (grounded: every reply is built from live rows) ----------
-
+// Editing these intent regexes? ROUTE (below copilotLLM) re-drives this via canned English
+// strings, and the offline ROUTE-contract test in test.js pins the mapping — keep them matching.
 async function copilot(message) {
   const m = message.toLowerCase();
   const w = await getWedding();
@@ -465,7 +466,9 @@ const AGENT_TOOLS = [
 // copilot() does the grounded rendering and the drafting. Prefer lookup over complete on ambiguity.
 const ROUTE = {
   answer_whats_left: () => "what's left?",
-  complete_task: a => `mark the ${a.task || ''} done`,
+  // empty task -> '' (ungroundable, no draft), matching lookup_task. Without the guard,
+  // "mark the  done" backtracks the mark-regex to needle "the " and drafts the wrong task.
+  complete_task: a => (a.task ? `mark the ${a.task} done` : ''),
   lookup_task: a => `${a.task || ''}`,
   record_rsvp_decline: () => 'the hendersons declined',
   guest_count: () => 'how many guests',
@@ -486,9 +489,12 @@ async function copilotLLM(message) {
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), AGENT_TIMEOUT_MS);
-  let res;
+  // Everything that touches the network stays INSIDE this try so the abort timer bounds the
+  // whole model turn — including res.json(). fetch() resolves on headers, so if the body read
+  // sat outside, a server that sends headers then stalls would hang past the timeout and never
+  // reach the deterministic fallback. clearTimeout runs in finally on every exit path.
   try {
-    res = await fetch(AGENT_URL, {
+    const res = await fetch(AGENT_URL, {
       method: 'POST',
       signal: ctrl.signal,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${AGENT_KEY}` },
@@ -500,19 +506,19 @@ async function copilotLLM(message) {
         messages: [{ role: 'system', content: sys }, { role: 'user', content: message }],
       }),
     });
+    if (!res.ok) { await res.body?.cancel(); throw new Error(`LLM HTTP ${res.status}`); } // drain so the pooled socket is freed
+    const data = await res.json();
+    const call = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!call) throw new Error('model returned no tool call');
+    const route = ROUTE[call.function.name];
+    if (!route) throw new Error(`unknown tool ${call.function.name}`);
+    let args = {};
+    try { args = JSON.parse(call.function.arguments || '{}'); } catch { /* tolerate empty */ }
+    const routed = await copilot(route(args)); // grounded render + draft via the unchanged engine
+    return { ...routed, engine: 'llm', tool: call.function.name };
   } finally {
     clearTimeout(timer);
   }
-  if (!res.ok) throw new Error(`LLM HTTP ${res.status}`);
-  const data = await res.json();
-  const call = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (!call) throw new Error('model returned no tool call');
-  const route = ROUTE[call.function.name];
-  if (!route) throw new Error(`unknown tool ${call.function.name}`);
-  let args = {};
-  try { args = JSON.parse(call.function.arguments || '{}'); } catch { /* tolerate empty */ }
-  const routed = await copilot(route(args)); // grounded render + draft via the unchanged engine
-  return { ...routed, engine: 'llm', tool: call.function.name };
 }
 
 // The only write path. High-stakes actions require confirmed:true. (evals 3, 4)
@@ -650,8 +656,10 @@ const server = http.createServer(async (req, res) => {
           const msg = data.message || '';
           const engine = LIVE_AGENT && AGENT_KEY ? copilotLLM : copilot;
           let out;
+          // Don't swallow silently: the live path's whole point is to prove the swap worked,
+          // so surface a failed model turn in the log while still degrading to deterministic.
           try { out = await engine(msg); }
-          catch { out = await copilot(msg); }
+          catch (e) { if (engine === copilotLLM) console.error('[LIVE_AGENT] LLM turn failed, using deterministic:', e.message); out = await copilot(msg); }
           return json(res, 200, out);
         }
         if (url.pathname === '/api/agent-preview') return json(res, 200, await agentPreview(data.scenario));
@@ -696,4 +704,6 @@ if (require.main === module) {
   const port = process.env.PORT || 3000;
   server.listen(port, () => console.log(`Hitch Planning → http://localhost:${port}`));
 }
-module.exports = { server, copilot, copilotLLM, approveAction, seed, getWedding, getTasks, getAudit, insertTask, ready, store, LIVE_AGENT, AGENT_KEY };
+// AGENT_KEY is deliberately NOT exported — it's a live credential and nothing imports it;
+// keeping it off the module surface avoids a stray log/serialize spilling the key.
+module.exports = { server, copilot, copilotLLM, ROUTE, approveAction, seed, getWedding, getTasks, getAudit, insertTask, ready, store };
