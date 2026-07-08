@@ -1,31 +1,111 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" role="img" aria-labelledby="t d">
-  <title id="t">Hitch process sketch</title>
-  <desc id="d">A hand-drawn style process map from brief and PRD read through research, sketches, prototypes, Railway deployment, and review gates.</desc>
-  <rect width="920" height="520" fill="#fffdf9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 520" role="img" aria-labelledby="t d">
+  <title id="t">Hitch process map</title>
+  <desc id="d">A clean process map showing how the PRD moved from brief review through research, sketches, prototypes, Railway deployment, and review gates.</desc>
+  <rect width="980" height="520" rx="18" fill="#fffdf9"/>
   <defs>
+    <filter id="paper" x="-4%" y="-4%" width="108%" height="108%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.035"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2b4a3e"/>
+    </marker>
     <style>
-      .box{fill:#fffdf9;stroke:#2b4a3e;stroke-width:3;rx:18;ry:18}.thin{stroke:#b4532a;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}.line{stroke:#2b4a3e;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}.dash{stroke-dasharray:9 9}.h{font:700 18px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#2b4a3e}.s{font:14px -apple-system,Segoe UI,Arial,sans-serif;fill:#26302b}.k{font:700 12px -apple-system,Segoe UI,Arial,sans-serif;letter-spacing:.12em;fill:#b4532a;text-transform:uppercase}
+      .panel{fill:#fffdf9;stroke:#2b4a3e;stroke-width:2.4}
+      .policy{fill:#e8efe9;stroke:#b4532a;stroke-width:2.2}
+      .rail{fill:none;stroke:#2b4a3e;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .soft{fill:none;stroke:#cddbd2;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+      .dash{fill:none;stroke:#b4532a;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:7 9}
+      .num{font:700 12px -apple-system,Segoe UI,Arial,sans-serif;letter-spacing:.14em;fill:#b4532a;text-transform:uppercase}
+      .title{font:700 20px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#2b4a3e}
+      .body{font:15px -apple-system,Segoe UI,Arial,sans-serif;fill:#26302b}
+      .small{font:13px -apple-system,Segoe UI,Arial,sans-serif;fill:#706d65}
+      .label{font:700 11px -apple-system,Segoe UI,Arial,sans-serif;letter-spacing:.12em;fill:#2b4a3e;text-transform:uppercase}
+      .policyTitle{font:700 17px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#2b4a3e}
     </style>
   </defs>
-  <path class="line" d="M70 110 C170 76 260 84 348 116"/>
-  <path class="thin dash" d="M90 400 C250 465 555 462 815 395"/>
-  <rect class="box" x="42" y="54" width="180" height="116" rx="18"/>
-  <text class="k" x="66" y="86">phase 1</text><text class="h" x="66" y="114">Brief + PRD</text><text class="s" x="66" y="141">problem, current state,</text><text class="s" x="66" y="161">metrics, evidence, evals</text>
-  <rect class="box" x="278" y="54" width="188" height="116" rx="18"/>
-  <text class="k" x="302" y="86">phase 2</text><text class="h" x="302" y="114">Research</text><text class="s" x="302" y="141">inputs, needs, planner</text><text class="s" x="302" y="161">workflow, NotebookLM</text>
-  <rect class="box" x="536" y="54" width="210" height="116" rx="18"/>
-  <text class="k" x="560" y="86">sketch</text><text class="h" x="560" y="114">Problem space</text><text class="s" x="560" y="141">couple use wedge +</text><text class="s" x="560" y="161">planner buyer capacity</text>
-  <path class="line" d="M224 112 C246 108 255 108 278 112"/><path class="line" d="M467 112 C494 111 511 111 536 112"/>
-  <path class="line" d="M154 196 C278 248 550 250 715 198"/>
-  <rect class="box" x="84" y="250" width="218" height="116" rx="18"/>
-  <text class="k" x="108" y="282">prototype ladder</text><text class="h" x="108" y="310">Artifacts -> Lovable</text><text class="s" x="108" y="337">fast screens, then</text><text class="s" x="108" y="357">stateful product claim</text>
-  <rect class="box" x="354" y="250" width="210" height="116" rx="18"/>
-  <text class="k" x="378" y="282">build</text><text class="h" x="378" y="310">Railway + SQLite</text><text class="s" x="378" y="337">questionnaire, record,</text><text class="s" x="378" y="357">approval, audit trail</text>
-  <rect class="box" x="630" y="250" width="214" height="116" rx="18"/>
-  <text class="k" x="654" y="282">review gates</text><text class="h" x="654" y="310">Code + doc review</text><text class="s" x="654" y="337">adversarial read, design</text><text class="s" x="654" y="357">polish, seven evals</text>
-  <path class="line" d="M303 308 C323 308 333 308 354 308"/><path class="line" d="M565 308 C589 308 604 308 630 308"/>
-  <path class="thin" d="M444 195 C464 183 483 184 498 198 C480 213 462 214 444 195Z"/>
-  <text class="h" x="388" y="214">write policy</text><text class="s" x="358" y="235">draft path != commit path</text>
-  <path class="thin" d="M790 92 C820 130 820 170 790 208"/><path class="thin" d="M800 126 L836 126"/><path class="thin" d="M800 174 L836 174"/>
-  <text class="s" x="766" y="236">B2B2C lens:</text><text class="s" x="766" y="257">couple uses,</text><text class="s" x="766" y="278">planner buys</text>
+
+  <g filter="url(#paper)">
+    <rect x="34" y="34" width="912" height="452" rx="18" fill="#fffdf9" stroke="#e9e2d6"/>
+  </g>
+
+  <text class="label" x="58" y="66">Problem to proof</text>
+
+  <g>
+    <rect class="panel" x="58" y="84" width="252" height="124" rx="16"/>
+    <text class="num" x="82" y="122">Phase 1</text>
+    <text class="title" x="82" y="150">Brief + PRD</text>
+    <text class="body" x="82" y="176">problem, current state,</text>
+    <text class="body" x="82" y="197">metrics, evidence, evals</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="364" y="84" width="252" height="124" rx="16"/>
+    <text class="num" x="388" y="122">Phase 2</text>
+    <text class="title" x="388" y="150">Research</text>
+    <text class="body" x="388" y="176">manual notes, user inputs,</text>
+    <text class="body" x="388" y="197">planner workflow, NotebookLM</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="670" y="84" width="252" height="124" rx="16"/>
+    <text class="num" x="694" y="122">Sketch</text>
+    <text class="title" x="694" y="150">Problem space</text>
+    <text class="body" x="694" y="176">couple use wedge,</text>
+    <text class="body" x="694" y="197">planner buyer capacity</text>
+  </g>
+
+  <path class="rail" d="M312 144 H356"/>
+  <path class="rail" d="M618 144 H662"/>
+
+  <g>
+    <rect class="policy" x="230" y="232" width="520" height="82" rx="18"/>
+    <text class="label" x="258" y="262">Write policy</text>
+    <text class="policyTitle" x="258" y="286">draft path writes nothing</text>
+    <text class="small" x="258" y="309">commit path is server-gated, audited, and eval checked</text>
+  </g>
+
+  <path class="soft" d="M184 212 C210 238 246 256 230 273"/>
+  <path class="soft" d="M490 212 V232"/>
+  <path class="soft" d="M796 212 C770 238 734 256 750 273"/>
+
+  <g>
+    <rect class="panel" x="58" y="342" width="252" height="124" rx="16"/>
+    <text class="num" x="82" y="384">Prototype ladder</text>
+    <text class="title" x="82" y="412">Artifacts -> Lovable</text>
+    <text class="body" x="82" y="438">quick screens first, then</text>
+    <text class="body" x="82" y="459">stateful product claim</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="364" y="342" width="252" height="124" rx="16"/>
+    <text class="num" x="388" y="384">Build</text>
+    <text class="title" x="388" y="412">Railway + SQLite</text>
+    <text class="body" x="388" y="438">questionnaire, record,</text>
+    <text class="body" x="388" y="459">approval, audit trail</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="670" y="342" width="252" height="124" rx="16"/>
+    <text class="num" x="694" y="384">Review gates</text>
+    <text class="title" x="694" y="412">Code + doc review</text>
+    <text class="body" x="694" y="438">adversarial read, polish,</text>
+    <text class="body" x="694" y="459">seven binary evals</text>
+  </g>
+
+  <path class="rail" d="M312 404 H356"/>
+  <path class="rail" d="M618 404 H662"/>
+  <path class="soft" d="M490 314 V334"/>
+  <path class="dash" d="M184 472 C330 500 650 500 796 472"/>
+
+  <g>
+    <rect x="760" y="238" width="150" height="74" rx="14" fill="#faf7f2" stroke="#e9e2d6"/>
+    <text class="label" x="780" y="264">B2B2C lens</text>
+    <text class="small" x="780" y="288">couple uses,</text>
+    <text class="small" x="780" y="307">planner buys</text>
+  </g>
 </svg>

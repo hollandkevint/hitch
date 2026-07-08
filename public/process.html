@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hitch Planning &mdash; Process</title>
+<title>Hitch Planning - Process</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   :root {
@@ -118,7 +118,7 @@ h2 { font-family: var(--display); font-optical-sizing: auto; letter-spacing: -0.
 /* editorial rhythm */
 p.lead { line-height: 1.5; }
 section + section { margin-top: 46px; }
-/* scroll reveal — engages only when JS adds .js-reveal; no-JS shows everything */
+/* scroll reveal: engages only when JS adds .js-reveal; no-JS shows everything */
 body.js-reveal section { opacity: 0; transform: translateY(16px); animation: none;
   transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
 body.js-reveal section.in { opacity: 1; transform: none; }
@@ -138,8 +138,123 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 .process-phase span { display: block; max-width: 66ch; font-family: var(--sans); font-size: 0.92rem; line-height: 1.5; color: var(--ink); }
 </style>
 <link rel="stylesheet" href="/panel.css">
+<style id="process-page-polish">
+body.process-page > .masthead ~ main {
+  width: min(100%, 1040px);
+  max-width: 1040px;
+  padding-inline: 32px;
+}
+body.process-page section > h2,
+body.process-page section > .lead {
+  max-width: 790px;
+}
+body.process-page .process-sketch {
+  max-width: 980px;
+  margin: 32px auto 10px;
+}
+body.process-page .process-sketch img {
+  border-radius: 16px;
+  box-shadow: 0 16px 42px -36px rgba(38, 48, 43, 0.44);
+}
+body.process-page .process-sketch figcaption {
+  max-width: 760px;
+}
+body.process-page .process-phase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  max-width: 900px;
+  margin-top: 28px;
+  counter-reset: phase;
+}
+body.process-page .process-phase li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  counter-increment: phase;
+}
+body.process-page .process-phase li::before {
+  content: counter(phase, decimal-leading-zero);
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--forest-soft);
+  color: var(--forest);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+body.process-page .process-phase b,
+body.process-page .process-phase span {
+  grid-column: 2;
+}
+body.process-page .pull {
+  max-width: 760px;
+}
+body.process-page.js-reveal section,
+body.process-page.js-reveal section.in {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+@media (max-width: 720px) {
+  body.process-page > .masthead ~ main { padding-inline: 20px; }
+  body.process-page .mast-brand {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  body.process-page .masthead h1 {
+    width: min(calc(100vw - 40px), 16ch);
+    max-width: 16ch;
+    font-size: 1.72rem;
+    overflow-wrap: break-word;
+    word-break: normal;
+    white-space: normal;
+    line-height: 1.03;
+  }
+  body.process-page .masthead .dek {
+    width: min(calc(100vw - 40px), 29ch);
+    max-width: 29ch;
+  }
+  body.process-page .record-line {
+    width: min(calc(100vw - 40px), 34ch);
+    max-width: 34ch;
+    overflow-wrap: anywhere;
+  }
+  body.process-page section > h2,
+  body.process-page section > .lead,
+  body.process-page .process-sketch,
+  body.process-page .process-sketch figcaption,
+  body.process-page .process-phase,
+  body.process-page .pull {
+    width: min(calc(100vw - 40px), 330px);
+    max-width: 330px;
+  }
+  body.process-page .process-sketch {
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  body.process-page .process-sketch img {
+    width: 760px;
+    max-width: none;
+  }
+  body.process-page .process-phase li {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  body.process-page .process-phase b,
+  body.process-page .process-phase span {
+    grid-column: auto;
+  }
+}
+</style>
 </head>
-<body>
+<body class="process-page">
 <aside class="panel-rail" aria-label="Panel controls">
   <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
@@ -195,15 +310,15 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <h2>How the PRD became a working product</h2>
   <p class="lead">The process story is the product judgment: start with the brief, get to a clean problem, build multiple artifacts, then make the demo prove the PRD instead of asking the room to imagine it.</p>
   <figure class="process-sketch">
-    <img src="/process-sketch.svg" alt="Hand-drawn process sketch showing brief, PRD read, research, architecture sketch, prototype ladder, Railway build, and review passes">
-    <figcaption>Sketch inserted for the panel: problem space on the left, architecture and write policy on the right, and the prototype ladder across the bottom.</figcaption>
+    <img src="/process-sketch.svg" alt="Process map showing brief review, research, problem sketching, prototype ladder, Railway build, write policy, and review gates">
+    <figcaption>Process map for the panel: problem framing across the top, write policy in the middle, and the prototype ladder through Railway and review gates across the bottom.</figcaption>
   </figure>
   <ul class="process-phase">
-    <li><b>1. Initial read and product framing</b><span>Read the exercise PRD, wrote the high-level problem and decision basics, mapped the current state, then forced the first pass to name metrics, evidence quality, assumptions, and QA/eval gates.</span></li>
-    <li><b>2. Research and problem sketching</b><span>Used manual write-ups, interview notes, wedding-planning research prompts, and a NotebookLM research notebook created through the CLI to stay close to user inputs, needs, and the planner/couple workflow. Sketched the problem space and architecture before polishing copy.</span></li>
-    <li><b>3. Prototype ladder</b><span>Started with quick artifacts and visual mocks, then moved through Claude Artifacts and Lovable-style prototype prompting into a real app shape. Used Claude Code and Compound Engineering passes to turn the Google Doc PRD into a working, inspectable build context.</span></li>
-    <li><b>4. Governed build</b><span>Built the questionnaire, record depth, planner view, approval gate, and audit trail in a Railway-deployed Node app with SQLite persistence. The architecture stayed centered on data governance: draft path writes nothing, commit path is server-gated, evals decide release.</span></li>
-    <li><b>5. Review hardening</b><span>Ran code-review and doc-review passes, adversarial reads, and design polish. The output is not a slide: it is one live URL with the demo, PRD, assumptions, architecture, questions, and v2 preview ready for a panel working session.</span></li>
+    <li><b>Initial read and product framing</b><span>Read the exercise PRD, wrote the high-level problem and decision basics, mapped the current state, then forced the first pass to name metrics, evidence quality, assumptions, and QA/eval gates.</span></li>
+    <li><b>Research and problem sketching</b><span>Used manual write-ups, interview notes, wedding-planning research prompts, and a NotebookLM research notebook created through the CLI to stay close to user inputs, needs, and the planner/couple workflow. Sketched the problem space and architecture before polishing copy.</span></li>
+    <li><b>Prototype ladder</b><span>Started with quick artifacts and visual mocks, then moved through Claude Artifacts and Lovable-style prototype prompting into a real app shape. Used Claude Code and Compound Engineering passes to turn the Google Doc PRD into a working, inspectable build context.</span></li>
+    <li><b>Governed build</b><span>Built the questionnaire, record depth, planner view, approval gate, and audit trail in a Railway-deployed Node app with SQLite persistence. The architecture stayed centered on data governance: draft path writes nothing, commit path is server-gated, evals decide release.</span></li>
+    <li><b>Review hardening</b><span>Ran code-review and doc-review passes, adversarial reads, and design polish. The output is not a slide: it is one live URL with the demo, PRD, assumptions, architecture, questions, and v2 preview ready for a panel working session.</span></li>
   </ul>
   <p class="pull">The point is not that the prototype is perfect. The point is that the PRD, evals, architecture, and demo are the same product argument.</p>
 </section>
