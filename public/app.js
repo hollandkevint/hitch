@@ -53,10 +53,16 @@ async function refresh() {
     </li>`).join('');
   renderRecordDepth({ planner, vendors, guests, budget });
 
-  // first load only: Hitch opens grounded in the record, not with an empty pane
+  // first load only: Hitch opens grounded in the record, not with an empty pane.
+  // After 9pm it acknowledges the hour first — most couples plan after work,
+  // and steady counsel starts by noticing that.
   if (!window.__greeted) {
     window.__greeted = true;
-    addMsg('bot', `You're ${weeksOut} weeks out and ${open.length} items are open. Ask what's left, or tell me what changed.`);
+    const hour = new Date().getHours();
+    const late = hour >= 21 || hour < 5;
+    addMsg('bot', late
+      ? `Planning after hours — that's most couples, honestly. You're ${weeksOut} weeks out and ${open.length} items are open. Ask what's left, and I'll keep it short.`
+      : `You're ${weeksOut} weeks out and ${open.length} items are open. Ask what's left, or tell me what changed.`);
   }
 }
 
@@ -214,6 +220,9 @@ function stampRecord(kind) {
   host.querySelectorAll('.stamp').forEach(n => n.remove());
   const s = document.createElement('div');
   s.className = 'stamp' + (kind === 'high' ? ' stamp-high' : '');
+  // a real rubber stamp never lands at the same angle twice
+  const baseRot = kind === 'high' ? 3 : -5;
+  s.style.setProperty('--rot', (baseRot + (Math.random() * 3.2 - 1.6)).toFixed(1) + 'deg');
   s.textContent = kind === 'high' ? 'Confirmed · recorded' : 'Recorded';
   host.appendChild(s);
   // routine stamps fade with their animation; the confirmed high-stakes stamp
@@ -276,5 +285,15 @@ $('#confirm-yes').onclick = async () => {
   closeConfirm($('#ask-input')); // executeApprove removes the action card, so #btn-approve won't survive
   if (action) await executeApprove(action, true);
 };
+
+// for the reader who opens DevTools: the interesting parts, mapped
+console.log(
+  '%cHitch%c — the record acts.\n' +
+  'The gate is server-enforced: POST /api/approve on a high-stakes action refuses without {confirmed:true} (try it).\n' +
+  'The v2 agent trace is POST /api/agent-preview — read-only, always would_write:false.\n' +
+  'Seven evals + three panel checks: node test.js. The write-path split is in /architecture.html.',
+  'font-family:Georgia,serif;font-size:14px;font-weight:600;color:#2b4a3e;',
+  'color:#26302b;'
+);
 
 refresh();

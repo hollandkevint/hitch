@@ -179,10 +179,11 @@ function seedSyntheticContext() {
     VALUES (?, ?, ?, ?, ?)
   `);
   [
-    ['planner-as-buyer', 'The planner pays; the couple uses the product.', 'Positioning and v2 packaging sell planner capacity, not only couple convenience.', 'If couple-paid, onboarding and pricing move closer to consumer wedding planning.', 'Planner asks for client-seat control or multi-wedding dashboard.'],
-    ['weekly-engagement', 'To-do and timeline work creates weekly return behavior.', 'The v1 wedge must address usage drop, not just a flashy planning moment.', 'If engagement is concentrated near wedding week, seating may outrank timeline.', 'Weekly active planning sessions do not improve after launch.'],
-    ['approval-tolerance', 'Users will approve grounded writes if the footprint is explicit.', 'Writeback is the moat; too much friction collapses the value.', 'If approvals feel like work, users stay in read-only advice mode.', 'Approval rate below target or repeated edits before approve.'],
-    ['record-accuracy', 'The shared wedding record is current enough to ground action.', 'Grounding only works if the product is trusted as the source of truth.', 'If planners maintain truth elsewhere, Hitch becomes another stale dashboard.', 'Planner corrections rise or vendors contradict the record.'],
+    ['planner-as-buyer', 'The planner pays and administers; the couple creates the usage wedge.', 'Positioning, permissions, and packaging need to sell planner capacity while feeling useful to couples.', 'If couple-paid, onboarding and pricing move toward consumer wedding planning instead of planner workflow.', 'Planner asks for multi-wedding controls, client-seat permissions, or business reporting.'],
+    ['weekly-engagement', 'To-do and timeline work creates weekly return behavior before the wedding.', 'The v1 wedge must address usage drop, not just create a flashy planning moment.', 'If engagement is concentrated near wedding week, seating or guest workflows may outrank timeline.', 'Weekly active planning sessions do not improve after launch.'],
+    ['approval-tolerance', 'Users will approve grounded writes when the footprint is explicit.', 'Writeback is the moat; too much friction collapses the value, too little control erodes trust.', 'If approvals feel like work, users stay in read-only advice mode.', 'Approval rate misses target or users repeatedly edit before approving.'],
+    ['record-freshness', 'The shared wedding record is current enough to ground action.', 'A data product is only as good as its source-of-truth contract.', 'If planners maintain truth elsewhere, Hitch becomes another stale dashboard.', 'Planner corrections rise or vendors contradict the record.'],
+    ['role-policy', 'Planner, couple, and vendor-adjacent data need different visibility before v2 autonomy.', 'B2B2C trust depends on actor-aware permissions, not one blended chat context.', 'The agent exposes private planner notes or lets the wrong actor approve a write.', 'Panel asks for per-actor auth before deeper agents.'],
     ['reversal-trust', 'Reversed or edited writebacks measure trust erosion.', 'Trust needs a counter-metric that can kill autonomy.', 'If reversals are invisible, the agent can degrade quietly.', 'Writebacks reversed exceeds 15% after two iterations.'],
   ].forEach(row => assumption.run(...row));
 
@@ -194,6 +195,7 @@ function seedSyntheticContext() {
     ['generic-inspiration', 'Generic inspiration and trend advice', 'Ceded to ChatGPT/Pinterest in v1.', 'Revisit only if record-aware inspiration becomes differentiated.'],
     ['seating-copilot', 'Seating copilot', 'Deferred because it is episodic, not weekly.', 'Revisit when timeline loop lifts engagement and guest data is reliable.'],
     ['guest-list-copilot', 'Guest and RSVP copilot', 'Deferred behind to-do/timeline writeback.', 'Revisit when planner needs headcount automation and per-actor auth is ready.'],
+    ['vendor-agent', 'Vendor follow-up automation beyond drafted messages', 'Deferred until role policy, approval audit, and vendor identity are stronger.', 'Revisit when planner trust and vendor communication logs are reliable.'],
     ['planner-white-label', 'White-label planner packaging', 'Deferred to v2 offering.', 'Revisit when planner-side retention and audit trust are proven.'],
     ['registry-thank-you', 'Registry gaps and thank-you follow-up', 'Roadmap after wedding-day planning.', 'Revisit when the record extends past the event into household setup.'],
   ].forEach(row => idea.run(...row));
@@ -310,7 +312,7 @@ function copilot(message) {
         {
           cascade: [
             `Guest count ${w.guest_count} → ${w.guest_count - 2}`,
-            `${caterer} headcount and final invoice`,
+            `${caterer} headcount and final balance`,
             `Your seating plan (2 seats to reassign)`,
           ],
           reversible: true,
@@ -395,7 +397,7 @@ function agentPreview(scenario = 'hendersons_declined') {
       ],
       agent_steps: [
         'Detect the RSVP decline as a cross-party change, not a simple task completion.',
-        'Trace the cascade: guest count, caterer headcount, invoice exposure, and seating balance.',
+        'Trace the cascade: guest count, caterer headcount, contract exposure, and seating balance.',
         'Classify by write policy: high value, reversible, but shared-state blast radius across planner and vendor.',
         'Stop at human approval; do not write from the preview.',
       ],
@@ -494,7 +496,13 @@ const server = http.createServer((req, res) => {
   const file = url.pathname === '/' ? '/index.html' : url.pathname;
   const fp = path.join(__dirname, 'public', path.normalize(file).replace(/^(\.\.[/\\])+/, ''));
   fs.readFile(fp, (err, buf) => {
-    if (err) { res.writeHead(404); return res.end('not found'); }
+    if (err) {
+      // unknown URLs get the same honesty the copilot gives ungroundable asks
+      return fs.readFile(path.join(__dirname, 'public', '404.html'), (e2, page) => {
+        res.writeHead(404, e2 ? {} : { 'Content-Type': 'text/html' });
+        res.end(e2 ? 'not found' : page);
+      });
+    }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(fp)] || 'text/plain' });
     res.end(buf);
   });
