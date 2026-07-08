@@ -39,6 +39,18 @@ if (PG_URL) {
   };
 }
 
+// ---------- live-agent toggle (v2) ----------
+// Deterministic regex engine is the default AND the runtime fallback. Flip LIVE_AGENT=on to
+// route tool-SELECTION through a real model (OpenRouter, OpenAI-compatible) — the model only
+// picks which atomic tool to call; the record read, the draft/approve gate, the audit trail,
+// and the 7 evals are all unchanged. Any LLM error or a >AGENT_TIMEOUT_MS stall degrades to
+// copilot() for that turn, so a stage hiccup never hangs the demo. Secrets via env only.
+const LIVE_AGENT = /^(on|1|true)$/i.test(process.env.LIVE_AGENT || '');
+const AGENT_MODEL = process.env.AGENT_MODEL || 'anthropic/claude-sonnet-5';
+const AGENT_KEY = process.env.OPENROUTER_API_KEY; // Anthropic-direct is the documented alt, not wired
+const AGENT_URL = process.env.AGENT_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions';
+const AGENT_TIMEOUT_MS = Number(process.env.AGENT_TIMEOUT_MS || 4000);
+
 // ---------- schema + seed ----------
 
 async function initSchema() {
@@ -434,6 +446,75 @@ async function copilot(message) {
   };
 }
 
+// ---------- live LLM engine (v2, behind LIVE_AGENT) ----------
+// The model's ONLY job is to choose one atomic tool. It returns a tool call; we map that to a
+// canonical intent and render the grounded reply + pending action through the SAME copilot()
+// path — so grounding stays row-exact, the write gate is untouched, and the 7 evals still decide
+// whether the swap is safe to ship. The model never writes; it never even renders the record.
+const AGENT_TOOLS = [
+  { type: 'function', function: { name: 'answer_whats_left', description: 'User asks what is left / remaining / next / status / their to-dos.', parameters: { type: 'object', properties: {} } } },
+  { type: 'function', function: { name: 'complete_task', description: 'User asserts a specific task is done, booked, or complete.', parameters: { type: 'object', properties: { task: { type: 'string', description: 'the task or vendor name the user says is done' } }, required: ['task'] } } },
+  { type: 'function', function: { name: 'lookup_task', description: 'User mentions a specific task/vendor WITHOUT asserting completion — they want its status.', parameters: { type: 'object', properties: { task: { type: 'string' } }, required: ['task'] } } },
+  { type: 'function', function: { name: 'record_rsvp_decline', description: 'A guest or party declines / RSVPs no / drops out (a high-stakes count change).', parameters: { type: 'object', properties: {} } } },
+  { type: 'function', function: { name: 'guest_count', description: 'User asks how many guests / the guest total.', parameters: { type: 'object', properties: {} } } },
+  { type: 'function', function: { name: 'frame_judgment', description: 'A judgment or emotional call: cut the guest list, is it worth it, feeling overwhelmed/stressed, budget worry.', parameters: { type: 'object', properties: { overwhelmed: { type: 'boolean' } } } } },
+  { type: 'function', function: { name: 'handoff', description: 'Generic inspiration or anything not in the wedding record (trends, ideas). Hand off.', parameters: { type: 'object', properties: {} } } },
+];
+
+// tool name -> a canonical message the deterministic engine already handles. The LLM classifies;
+// copilot() does the grounded rendering and the drafting. Prefer lookup over complete on ambiguity.
+const ROUTE = {
+  answer_whats_left: () => "what's left?",
+  complete_task: a => `mark the ${a.task || ''} done`,
+  lookup_task: a => `${a.task || ''}`,
+  record_rsvp_decline: () => 'the hendersons declined',
+  guest_count: () => 'how many guests',
+  frame_judgment: a => (a.overwhelmed ? 'i feel overwhelmed' : 'should we cut the guest list?'),
+  handoff: () => 'what flowers are trending this year?',
+};
+
+async function copilotLLM(message) {
+  if (!AGENT_KEY) throw new Error('OPENROUTER_API_KEY not set');
+  const w = await getWedding();
+  const open = await openTasks();
+  const sys = [
+    'You are the tool-router for Hitch, a wedding-planning copilot. You do NOT write to the record and you do NOT compose replies — you ONLY choose exactly one tool that best fits the user message.',
+    `This wedding: ${w.couple}, ${w.city}, guest count ${w.guest_count}.`,
+    `Open tasks: ${open.map(t => t.title).join('; ') || '(none)'}.`,
+    'Rules: assert-done language -> complete_task. A bare task/vendor mention without "done" -> lookup_task. A guest declining -> record_rsvp_decline. Judgment/feelings/budget worry -> frame_judgment. Anything not in the record (trends, generic ideas) -> handoff.',
+  ].join('\n');
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), AGENT_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(AGENT_URL, {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${AGENT_KEY}` },
+      body: JSON.stringify({
+        model: AGENT_MODEL,
+        temperature: 0,
+        tools: AGENT_TOOLS,
+        tool_choice: 'required',
+        messages: [{ role: 'system', content: sys }, { role: 'user', content: message }],
+      }),
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res.ok) throw new Error(`LLM HTTP ${res.status}`);
+  const data = await res.json();
+  const call = data.choices?.[0]?.message?.tool_calls?.[0];
+  if (!call) throw new Error('model returned no tool call');
+  const route = ROUTE[call.function.name];
+  if (!route) throw new Error(`unknown tool ${call.function.name}`);
+  let args = {};
+  try { args = JSON.parse(call.function.arguments || '{}'); } catch { /* tolerate empty */ }
+  const routed = await copilot(route(args)); // grounded render + draft via the unchanged engine
+  return { ...routed, engine: 'llm', tool: call.function.name };
+}
+
 // The only write path. High-stakes actions require confirmed:true. (evals 3, 4)
 async function approveAction(id, confirmed) {
   const action = pendingActions.get(id);
@@ -563,7 +644,16 @@ const server = http.createServer(async (req, res) => {
       try {
         await ready;
         const data = body ? JSON.parse(body) : {};
-        if (url.pathname === '/api/copilot') return json(res, 200, await copilot(data.message || ''));
+        if (url.pathname === '/api/copilot') {
+          // toggle off -> deterministic (bit-identical). toggle on -> LLM picks the tool,
+          // and ANY failure/timeout degrades to copilot() for this turn. (wire-plan U2)
+          const msg = data.message || '';
+          const engine = LIVE_AGENT && AGENT_KEY ? copilotLLM : copilot;
+          let out;
+          try { out = await engine(msg); }
+          catch { out = await copilot(msg); }
+          return json(res, 200, out);
+        }
         if (url.pathname === '/api/agent-preview') return json(res, 200, await agentPreview(data.scenario));
         if (url.pathname === '/api/approve') {
           const r = await approveAction(data.id, !!data.confirmed);
@@ -606,4 +696,4 @@ if (require.main === module) {
   const port = process.env.PORT || 3000;
   server.listen(port, () => console.log(`Hitch Planning → http://localhost:${port}`));
 }
-module.exports = { server, copilot, approveAction, seed, getWedding, getTasks, getAudit, insertTask, ready, store };
+module.exports = { server, copilot, copilotLLM, approveAction, seed, getWedding, getTasks, getAudit, insertTask, ready, store, LIVE_AGENT, AGENT_KEY };

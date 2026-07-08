@@ -15,6 +15,18 @@ node test.js          # 7 binary evals against the live API + real rows (SQLite 
 
 Reset demo state anytime: `curl -X POST localhost:3000/api/reset`, or delete `wedding.db` and restart.
 
+### Live agent (v2, off by default)
+
+The deterministic engine is the default and the runtime fallback. To route tool-selection through a real model, set these env vars (Railway variables in production — never commit a key):
+
+```
+LIVE_AGENT=on
+OPENROUTER_API_KEY=sk-or-...           # OpenRouter (OpenAI-compatible). Anthropic-direct is the documented alt.
+AGENT_MODEL=anthropic/claude-sonnet-5  # any OpenRouter id; a cheaper router (e.g. GLM) carries the tiering story
+```
+
+`LIVE_AGENT=on node test.js` runs the same 7 evals against the live path — that pass/fail is the ship gate for turning the toggle on.
+
 ## What it demonstrates
 
 1. **Grounded reads.** "What's left before the wedding?" returns the real open rows from the `tasks` table, with computed days-late on the overdue florist deposit. Nothing invented (Eval 1 enforces this).
@@ -28,7 +40,7 @@ Reset demo state anytime: `curl -X POST localhost:3000/api/reset`, or delete `we
 ## Architecture
 
 - `wedding` / `tasks` / `audit_log` tables in the database. The writeback flips a real row, not component memory.
-- The assistant is a deterministic server-side rule engine over live SELECTs; every reply string is interpolated from rows. In production this becomes an LLM with atomic read/update tools, and the **approval-only write path plus the eval gate stay exactly where they are.** That governed layer is model-agnostic by construction.
+- The assistant is a deterministic server-side rule engine over live SELECTs; every reply string is interpolated from rows. Flip `LIVE_AGENT=on` and a real LLM (OpenRouter, OpenAI-compatible) does the tool-*selection* instead — it picks which atomic tool to call; the grounded render, the **approval-only write path, and the eval gate stay exactly where they are.** The same 7 evals pass with the model behind the tools (`LIVE_AGENT=on node test.js`), which is the point: the governed layer is model-agnostic by construction, and any LLM error or ~4s stall degrades to the deterministic engine so a stage hiccup never hangs.
 - Write policy = value x reversibility. Low-stakes task completion applies after one approval; anything touching shared vendor-facing state requires the confirm gate. Enforced server-side.
 - The evals in `test.js` are the acceptance harness: binary, fast, and run against the real API and real rows. Swap the rule engine for a model and the same evals still decide whether the system is safe to ship.
 

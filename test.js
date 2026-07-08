@@ -1,5 +1,7 @@
 // The PRD's 5-point eval set, executed against the real server + real SQLite rows.
 // Run: node test.js  (starts its own server instance on :3100)
+// Live-agent gate: LIVE_AGENT=on OPENROUTER_API_KEY=... node test.js runs the same 7 evals
+// with a real model doing tool-selection — a green run is the gate for shipping the toggle on.
 const assert = require('node:assert');
 const fs = require('node:fs');
 const { server, getTasks, getWedding, seed, insertTask, ready } = require('./server.js');
