@@ -237,7 +237,14 @@ const getPanelState = () => ({
 const openTasks = () => getTasks().filter(t => t.status === 'open');
 const fmtDate = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US',
   { month: 'long', day: 'numeric', year: 'numeric' });
-const daysLate = t => Math.floor((Date.now() - new Date(t.due_date + 'T12:00:00')) / 86400000);
+// Calendar-day difference, timezone-independent: the server (UTC on Railway) and
+// the browser (local) must show the same number of days late side by side.
+const daysLate = t => {
+  const [y, mo, d] = t.due_date.split('-').map(Number);
+  const n = new Date();
+  return Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - Date.UTC(y, mo - 1, d)) / 86400000);
+};
+const lateLabel = n => n === 1 ? '1 day late' : `${n} days late`;
 
 // Pending actions the copilot has drafted, keyed by id. Approval is the ONLY write path. (eval 4)
 const pendingActions = new Map();
@@ -264,13 +271,13 @@ function copilot(message) {
     const overdue = open.filter(t => daysLate(t) > 0);
     const lines = open.map(t =>
       `• ${t.title}${t.vendor ? ` (${t.vendor})` : ''} — due ${fmtDate(t.due_date)}` +
-      (daysLate(t) > 0 ? ` ⚠ ${daysLate(t)} days late` : ''));
+      (daysLate(t) > 0 ? ` ⚠ ${lateLabel(daysLate(t))}` : ''));
     let reply = `${open.length} tasks open for ${w.couple} (${fmtDate(w.wedding_date)}, ${w.city}):\n` + lines.join('\n');
     let action = null;
     const florist = overdue.find(t => /florist/i.test(t.title));
     const walkthrough = open.find(t => /walkthrough/i.test(t.title));
     if (florist && walkthrough) {
-      reply += `\n\nThe ${florist.vendor} deposit is ${daysLate(florist)} days late — want me to draft the follow-up? I can also mark the venue walkthrough done if that's already happened.`;
+      reply += `\n\nThe ${florist.vendor} deposit is ${lateLabel(daysLate(florist))} — want me to draft the follow-up? I can also mark the venue walkthrough done if that's already happened.`;
       action = draftAction(
         'followup+complete',
         `Draft follow-up to ${florist.vendor} + mark "${walkthrough.title}" done`,
@@ -346,6 +353,40 @@ function copilot(message) {
         (rsvp ? ` One caveat from the record: "${rsvp.title}" is still open, so that number can move.` : ''),
       action: null,
     };
+  }
+
+  // Partial task mentions ("pay florist", "the rsvps") ground on the record
+  // instead of refusing — the refusal below is only for things the record
+  // genuinely doesn't hold. Exact-token match, length ≥ 4, read-only: this
+  // branch never drafts an action, so it cannot widen the write surface.
+  const STOP = new Set(['what', 'whats', 'this', 'that', 'with', 'left', 'done', 'mark',
+    'wedding', 'week', 'weeks', 'guest', 'guests', 'should', 'record', 'open', 'late',
+    'have', 'need', 'want', 'about', 'when', 'will', 'your', 'from', 'list']);
+  const tokenize = s => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(x => x.length >= 4 && !STOP.has(x));
+  const asked = new Set(tokenize(m));
+  if (asked.size) {
+    const mentioned = getTasks().filter(t =>
+      tokenize(`${t.title} ${t.vendor || ''}`).some(tok => asked.has(tok)));
+    if (mentioned.length === 1) {
+      const t = mentioned[0];
+      const where = t.status === 'done'
+        ? `already marked done in the record`
+        : `open — due ${fmtDate(t.due_date)}${daysLate(t) > 0 ? `, ${lateLabel(daysLate(t))}` : ''}`;
+      return {
+        reply: `That's in the record: "${t.title}"${t.vendor ? ` (${t.vendor})` : ''} is ${where}.` +
+          (t.status === 'open' ? ` Say "mark the ${t.title.toLowerCase()} done" once it's handled, or ask what's left for the full picture.` : ''),
+        action: null,
+      };
+    }
+    if (mentioned.length > 1) {
+      return {
+        reply: `The record has ${mentioned.length} entries that could be it:\n` +
+          mentioned.map(t => `• ${t.title}${t.vendor ? ` (${t.vendor})` : ''} — ${t.status}`).join('\n') +
+          `\nTell me which one, or say "mark the <task> done".`,
+        action: null,
+      };
+    }
   }
 
   // Ungroundable — hand off, never invent, never write (eval 5)

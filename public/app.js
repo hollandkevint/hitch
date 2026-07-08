@@ -21,7 +21,11 @@ function fmtDue(iso) {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 function daysLate(iso) {
-  return Math.floor((Date.now() - new Date(iso + 'T12:00:00')) / 86400000);
+  // calendar-day difference, matching the server's math exactly — the badge and
+  // the copilot's reply are visible side by side and must agree
+  const [y, mo, d] = iso.split('-').map(Number);
+  const n = new Date();
+  return Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - Date.UTC(y, mo - 1, d)) / 86400000);
 }
 
 async function refresh() {

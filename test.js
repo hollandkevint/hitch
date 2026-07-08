@@ -80,6 +80,14 @@ async function main() {
     assert.strictEqual(data.action, null, 'drafted an action for an ungroundable ask');
     assert(/ChatGPT|general/i.test(data.reply), 'reply does not hand off to a general tool');
     assert.strictEqual(JSON.stringify(getTasks()) + getWedding().guest_count, before, 'state changed on an ungroundable ask');
+
+    // The boundary cuts both ways: a partial mention of something the record DOES
+    // hold ("Pay florist") must ground on the row, not refuse — and still not write.
+    const partial = await api('/api/copilot', { message: 'Pay florist' });
+    assert(/Pay florist deposit/.test(partial.data.reply), 'partial task mention was not grounded on the record');
+    assert(!/ChatGPT|Pinterest/.test(partial.data.reply), 'partial task mention got the refusal reply');
+    assert.strictEqual(partial.data.action, null, 'partial mention drafted an action (read-only branch must not write)');
+    assert.strictEqual(JSON.stringify(getTasks()) + getWedding().guest_count, before, 'state changed on a partial mention');
   });
 
   // EVAL 6: steady counsel — decision framing without sycophancy, no write, judgment handed back.
