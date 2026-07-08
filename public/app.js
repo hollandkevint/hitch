@@ -52,6 +52,12 @@ async function refresh() {
       <time>${new Date(a.at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</time>
     </li>`).join('');
   renderRecordDepth({ planner, vendors, guests, budget });
+
+  // first load only: Hitch opens grounded in the record, not with an empty pane
+  if (!window.__greeted) {
+    window.__greeted = true;
+    addMsg('bot', `You're ${weeksOut} weeks out and ${open.length} items are open. Ask what's left, or tell me what changed.`);
+  }
 }
 
 function money(n) {
@@ -91,6 +97,7 @@ function addMsg(kind, text) {
   div.textContent = text;
   $('#chat').appendChild(div);
   div.scrollIntoView({ block: 'nearest' });
+  return div;
 }
 
 function renderAction(action) {
@@ -109,7 +116,18 @@ function renderAction(action) {
   $('#btn-approve').onclick = () => approve(action);
   $('#btn-edit').onclick = () => {
     const pre = $('#draft-text');
-    if (pre) { pre.contentEditable = 'true'; pre.focus(); }
+    if (!pre) return;
+    pre.contentEditable = 'true';
+    pre.focus();
+    // honest seam: edits aren't captured by the v0 write path, so say so
+    // rather than silently discarding them on approve.
+    if (!$('#edit-note')) {
+      const note = document.createElement('p');
+      note.id = 'edit-note';
+      note.className = 'edit-note';
+      note.textContent = 'Editing here is display-only in this prototype — approval records the draft as proposed. Capturing edits (and auditing them) is the v1 write path.';
+      pre.after(note);
+    }
   };
 }
 
@@ -151,7 +169,7 @@ function renderCascade(action) {
   slot.textContent = '';
   const intro = document.createElement('p');
   intro.className = 'cascade-intro';
-  intro.textContent = 'This changes shared records your planner and vendors work from:';
+  intro.textContent = 'Committing this changes:';
   slot.appendChild(intro);
 
   const list = document.createElement('ul');
@@ -171,10 +189,19 @@ function renderCascade(action) {
 }
 
 async function executeApprove(action, confirmed) {
-  const r = await api('/api/approve', { id: action.id, confirmed });
+  let r;
+  try {
+    r = await api('/api/approve', { id: action.id, confirmed });
+  } catch {
+    addMsg('bot', '⚠ Couldn\'t reach the record — nothing was written. Try the approval again.');
+    return;
+  }
   if (r.error) { addMsg('bot', `⚠ ${r.error}`); return; }
   renderAction(null);
-  addMsg('bot', '✓ Done — your timeline is updated and the change is on the record.');
+  // the high-stakes close names what just happened; the routine close stays light
+  addMsg('bot', confirmed
+    ? 'Recorded. The cascade you confirmed is in the audit trail — your planner sees the same record you do.'
+    : '✓ Done — your timeline is updated and the change is on the record.');
   await refresh(); // the writeback made visible: rows flip, planner audit trail gains an entry
   stampRecord(confirmed ? 'high' : 'routine');
 }
@@ -189,7 +216,12 @@ function stampRecord(kind) {
   s.className = 'stamp' + (kind === 'high' ? ' stamp-high' : '');
   s.textContent = kind === 'high' ? 'Confirmed · recorded' : 'Recorded';
   host.appendChild(s);
-  setTimeout(() => s.remove(), 2600);
+  // routine stamps fade with their animation; the confirmed high-stakes stamp
+  // stays pressed until the next interaction clears it (clearStamps below)
+  if (kind !== 'high') setTimeout(() => s.remove(), 2300);
+}
+function clearStamps() {
+  document.querySelectorAll('.stamp').forEach(n => n.remove());
 }
 
 // wire-up
@@ -199,10 +231,17 @@ $('#ask-form').onsubmit = async e => {
   const q = input.value.trim();
   if (!q) return;
   input.value = '';
+  clearStamps();
   addMsg('user', q);
-  const { reply, action } = await api('/api/copilot', { message: q });
-  addMsg('bot', reply);
-  renderAction(action);
+  const pending = addMsg('bot', 'Checking the record…');
+  try {
+    const { reply, action } = await api('/api/copilot', { message: q });
+    pending.remove();
+    addMsg('bot', reply);
+    renderAction(action);
+  } catch {
+    pending.textContent = '⚠ Couldn\'t reach the record — ask that again.';
+  }
 };
 
 document.querySelectorAll('.hint').forEach(a => a.onclick = e => {
@@ -214,6 +253,7 @@ document.querySelectorAll('.hint').forEach(a => a.onclick = e => {
 $('#btn-couple').onclick = () => setView('couple');
 $('#btn-planner').onclick = () => setView('planner');
 function setView(v) {
+  clearStamps();
   $('#couple-view').hidden = v !== 'couple';
   $('#planner-view').hidden = v !== 'planner';
   for (const [btn, active] of [[$('#btn-couple'), v === 'couple'], [$('#btn-planner'), v === 'planner']]) {

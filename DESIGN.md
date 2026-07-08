@@ -5,7 +5,7 @@ colors:
   ivory: "#faf7f2"
   paper: "#fffdf9"
   ink: "#26302b"
-  muted: "#7d7a72"
+  muted: "#706d65"
   line: "#e9e2d6"
   forest: "#2b4a3e"
   forest-soft: "#e8efe9"
@@ -141,7 +141,7 @@ A warm paper ground, one forest ink, one terracotta stamp. Restrained by doctrin
 - **Bright Paper** (`#fffdf9`): Card and surface fill, one step brighter than the ground so panels lift tonally without a shadow.
 - **Bot Paper** (`#f4f0e7`): The agent's chat-bubble ground, a hair warmer than the surface so the agent's voice reads as distinct from the couple's.
 - **Forest Ink Text** (`#26302b`): Body and heading text. A forest-tinted near-black, never `#000`.
-- **Ash Muted** (`#7d7a72`): Secondary text, vendor names, timestamps, hint copy.
+- **Ash Muted** (`#706d65`): Secondary text, vendor names, timestamps, hint copy.
 - **Deckle Line** (`#e9e2d6`): Hairlines, borders, dividers. The edge of the paper.
 - **Warm White** (`#fdfcf9`): Text and icons on forest and terracotta fills. The closest this system comes to white, and only ever on a colored ground.
 
@@ -152,11 +152,11 @@ A warm paper ground, one forest ink, one terracotta stamp. Restrained by doctrin
 
 ## 3. Typography
 
-**Display / Record Font:** Georgia (with "Times New Roman", serif)
+**Display / Record Font:** Fraunces (webfont, `display=swap`), falling back to Georgia, "Times New Roman", serif
 **UI / Chrome Font:** system sans (-apple-system, "Segoe UI", Helvetica, Arial)
 **Label Font:** the same system sans, tracked and uppercased
 
-**Character:** Two voices, held apart on purpose. Georgia is the authored voice, warm and letterpress-adjacent, and it carries anything a human wrote or that lives in the record: headings, the drafted vendor email, vendor names in italic. The system sans is the machine's voice, plain and quiet, and it carries the chrome: buttons, labels, metadata, timestamps. Zero network dependency by design, so the type renders instantly and identically offline.
+**Character:** Two voices, held apart on purpose. Georgia is the authored voice, warm and letterpress-adjacent, and it carries anything a human wrote or that lives in the record: headings, the drafted vendor email, vendor names in italic. The system sans is the machine's voice, plain and quiet, and it carries the chrome: buttons, labels, metadata, timestamps. Display headings load Fraunces over the network with `display=swap` and a metric-close Georgia fallback, so offline or pre-swap renders stay legible in the same voice; body and chrome type remain zero-network system faces.
 
 ### Hierarchy
 - **Display** (Georgia 600, 1.5rem, line-height 1, tracking 0.02em): The product name and the couple's masthead. One per screen.
@@ -177,7 +177,7 @@ This system is flat by doctrine and lifts tonally, not with shadow. Panels separ
 - **Consequence lift** (`box-shadow: 0 12px 40px rgba(38, 48, 43, 0.25)`): The confirm dialog only. A real, deep, forest-tinted shadow that puts the dialog unmistakably above everything, paired with a scrim (`rgba(38, 48, 43, 0.42)`) over the page.
 
 ### Named Rules
-**The Flat-Until-Consequence Rule.** Surfaces are flat at rest, seated on a hairline. The single moment that earns a real shadow is the confirm gate, because the one time the interface should feel like it is rising above everything else is the moment the agent is about to change shared reality. Reserve the lift for that.
+**The Flat-Until-Consequence Rule.** Surfaces are flat at rest, seated on a hairline (section panels may carry a second, longer-throw hairline for paper depth, but nothing at rest reads as floating). The single moment that earns a real, unmistakable shadow is the confirm gate, because the one time the interface should feel like it is rising above everything else is the moment the agent is about to change shared reality. Reserve the lift for that.
 
 ## 5. Components
 
@@ -222,7 +222,7 @@ Under every agent action, a muted line states what it writes, whether it is reve
 - **Do** tint every neutral toward the brand hue; keep the paper warm.
 
 ### Don't:
-- **Don't** use generic SaaS AI cues: no purple, no gradients anywhere, no sparkle emoji, no "Ask me anything!"
+- **Don't** use generic SaaS AI cues: no purple, no gradients as decoration on elements, no sparkle emoji, no "Ask me anything!" (One sanctioned exception: the page ground may carry forest-tinted radial washes at or below 5% alpha for paper depth. Never terracotta — atmosphere is not consequence.)
 - **Don't** go bridal saccharine: no blush pink, no script fonts, no confetti, no hearts.
 - **Don't** render the agent as a full-screen chat tab. Hitch lives inside the planning surface or it is not the product.
 - **Don't** let the agent perform enthusiasm: no exclamation marks, no false cheer, no validation theater.
