@@ -118,11 +118,53 @@ async function main() {
     seed();
   });
 
+  await check('Panel data: state includes synthetic planner, vendors, guests, budget, assumptions, ideas', async () => {
+    seed();
+    const { data } = await api('/api/state');
+    assert.strictEqual(data.planner.name, 'Amelia Hart', 'planner profile missing');
+    assert(Array.isArray(data.vendors) && data.vendors.length >= 7, 'vendors missing or too small');
+    assert(data.vendors.some(v => v.name === 'Lowcountry Catering Co.'), 'caterer missing from vendor context');
+    assert(Array.isArray(data.guests) && data.guests.some(g => /Henderson/i.test(g.party_name)), 'Henderson guest party missing');
+    assert(Array.isArray(data.budget) && data.budget.some(b => b.category === 'Catering'), 'budget context missing');
+    assert(Array.isArray(data.assumptions) && data.assumptions.some(a => a.key === 'planner-as-buyer'), 'assumptions missing');
+    assert(Array.isArray(data.ideas) && data.ideas.some(i => i.key === 'seating-copilot'), 'ideas missing');
+  });
+
+  await check('Panel data: reset restores richer context and original demo seed', async () => {
+    seed();
+    const { data } = await api('/api/copilot', { message: 'The Hendersons declined' });
+    await api('/api/approve', { id: data.action.id, confirmed: true });
+    await api('/api/reset', {});
+    const state = await api('/api/state');
+    assert.strictEqual(state.data.wedding.guest_count, 120, 'reset did not restore guest count');
+    assert.strictEqual(state.data.tasks.filter(t => t.status === 'open').length, 6, 'reset changed original task seed');
+    assert.strictEqual(state.data.planner.active_weddings, 14, 'reset did not restore planner profile');
+    assert(state.data.guests.some(g => g.party_name === 'Henderson party' && g.rsvp_status === 'declined'), 'reset did not restore Henderson party');
+  });
+
+  await check('Agent preview: deterministic read-only trace mutates nothing', async () => {
+    seed();
+    const before = await api('/api/state');
+    const { status, data } = await api('/api/agent-preview', { scenario: 'hendersons_declined' });
+    const after = await api('/api/state');
+    assert.strictEqual(status, 200);
+    assert.strictEqual(data.preview, true, 'preview flag missing');
+    assert.strictEqual(data.scenario, 'hendersons_declined', 'scenario not echoed');
+    assert(Array.isArray(data.reads) && data.reads.length >= 4, 'preview did not read enough record context');
+    assert(Array.isArray(data.agent_steps) && data.agent_steps.length >= 3, 'preview missing agent steps');
+    assert(Array.isArray(data.proposed_tools) && data.proposed_tools.some(t => t.name === 'update_guest_count'), 'preview missing proposed tool');
+    assert.strictEqual(data.approval_needed, true, 'preview should stop for approval');
+    assert.strictEqual(data.would_write, false, 'preview must not write');
+    assert.deepStrictEqual(after.data.wedding, before.data.wedding, 'preview mutated wedding');
+    assert.deepStrictEqual(after.data.tasks, before.data.tasks, 'preview mutated tasks');
+    assert.deepStrictEqual(after.data.audit, before.data.audit, 'preview mutated audit');
+  });
+
   seed(); // leave a clean demo state
   server.close();
   console.log(results.join('\n'));
   if (results.some(r => r.startsWith('FAIL'))) process.exit(1);
-  console.log('\nAll 7 evals pass (5 PRD + steady counsel + injection safety).');
+  console.log('\nAll 7 evals and panel checks pass (5 PRD + steady counsel + injection safety + richer context).');
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

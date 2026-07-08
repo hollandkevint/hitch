@@ -128,8 +128,19 @@ body.js-reveal section.in { opacity: 1; transform: none; }
 }
 nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </style>
+<link rel="stylesheet" href="/panel.css">
 </head>
 <body>
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/panel.html">Review</a>
+  <a href="/">Demo</a>
+  <a href="/prd.html">PRD</a>
+  <a href="/assumptions.html">Assumptions</a>
+  <a href="/architecture.html">Architecture</a>
+  <a class="primary" href="/decisions.html">Questions</a>
+  <a href="/next.html">Roadmap</a>
+  <a href="/">Back to demo</a>
+</aside>
 
 <div class="masthead">
   <div class="masthead-inner">
@@ -222,6 +233,26 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     <li>
       <span class="call">Two parties share this record. Where&rsquo;s the access control?</span>
       <span class="why">The planner view is read-only with the full audit trail, and every commit is attributed. But actor identity is a demo convention, not authentication. <b>Next:</b> Per-actor auth so the audit trail is trustworthy across parties, and PII in the record treated as an access-control boundary, not a column.</span>
+    </li>
+  </ul>
+</section>
+
+<section id="room-prompts">
+  <p class="kicker">Questions to ask the room</p>
+  <h2>Use the panel to sharpen the next call.</h2>
+  <p class="lead">The page is strongest if it becomes a working session. These prompts turn the current decisions into specific tradeoffs the room can improve.</p>
+  <ul class="ledger">
+    <li>
+      <span class="call">Designer</span>
+      <span class="why">Where should the approval footprint appear: inside the action card, one line above approve, or as a reveal only on high-stakes writes?</span>
+    </li>
+    <li>
+      <span class="call">Engineering Manager</span>
+      <span class="why">Which hardening step would you sequence first: commit-time revalidation, durable pending drafts, or idempotency keys?</span>
+    </li>
+    <li>
+      <span class="call">PMM</span>
+      <span class="why">If the buyer is the planner, which proof point should lead: weekly couple reactivation, fewer vendor coordination loops, or lower reversal rate?</span>
     </li>
   </ul>
 </section>

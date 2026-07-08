@@ -25,7 +25,7 @@ function daysLate(iso) {
 }
 
 async function refresh() {
-  const { wedding, tasks, audit } = await api('/api/state');
+  const { wedding, tasks, audit, planner, vendors, guests, budget } = await api('/api/state');
   const weeksOut = Math.max(0, Math.round((new Date(wedding.wedding_date) - Date.now()) / (7 * 86400000)));
   $('#wedding-meta').textContent =
     `${wedding.couple} · ${new Date(wedding.wedding_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · ${wedding.city} · ${wedding.guest_count} guests · ${weeksOut} weeks out`;
@@ -51,6 +51,37 @@ async function refresh() {
     <li><span class="actor ${actorClass(a.actor)}">${esc(a.actor)}</span> ${esc(a.action)}
       <time>${new Date(a.at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</time>
     </li>`).join('');
+  renderRecordDepth({ planner, vendors, guests, budget });
+}
+
+function money(n) {
+  return Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+}
+
+function renderRecordDepth({ planner, vendors, guests, budget }) {
+  const slot = $('#record-depth-grid');
+  if (!slot || !planner) return;
+  const highRisk = vendors.filter(v => v.risk === 'high').map(v => `${v.name}: ${v.next_action}`);
+  const pendingGuests = guests.filter(g => g.rsvp_status === 'pending');
+  const variance = budget.reduce((sum, b) => sum + Number(b.variance || 0), 0);
+  slot.innerHTML = `
+    <article>
+      <h3>Planner</h3>
+      <p><strong>${esc(planner.name)}</strong>, ${esc(planner.company)}</p>
+      <p>${esc(planner.active_weddings)} active weddings · bottleneck: ${esc(planner.capacity_bottleneck)}</p>
+    </article>
+    <article>
+      <h3>Vendor risk</h3>
+      <p>${highRisk.length ? highRisk.map(esc).join('<br>') : 'No high-risk vendors.'}</p>
+    </article>
+    <article>
+      <h3>Guest state</h3>
+      <p>${esc(pendingGuests.length)} pending parties · Henderson party already marked declined for v2 trace.</p>
+    </article>
+    <article>
+      <h3>Budget dependency</h3>
+      <p>${money(variance)} variance across open line items · catering and rentals depend on headcount/seating.</p>
+    </article>`;
 }
 
 function addMsg(kind, text) {

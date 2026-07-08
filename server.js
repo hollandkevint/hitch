@@ -31,6 +31,56 @@ function initSchema() {
       action TEXT NOT NULL,
       at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS planner_profile (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      company TEXT NOT NULL,
+      market TEXT NOT NULL,
+      active_weddings INTEGER NOT NULL,
+      pays_for_hitch TEXT NOT NULL,
+      capacity_bottleneck TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS vendors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category TEXT NOT NULL,
+      name TEXT NOT NULL,
+      status TEXT NOT NULL,
+      next_action TEXT NOT NULL,
+      contract_amount INTEGER NOT NULL,
+      risk TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS guests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      party_name TEXT NOT NULL,
+      relationship TEXT NOT NULL,
+      party_size INTEGER NOT NULL,
+      rsvp_status TEXT NOT NULL,
+      table_preference TEXT NOT NULL,
+      constraint_notes TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS budget_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category TEXT NOT NULL,
+      estimate INTEGER NOT NULL,
+      committed INTEGER NOT NULL,
+      variance INTEGER NOT NULL,
+      dependency TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS assumptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT NOT NULL,
+      assumption TEXT NOT NULL,
+      why_it_matters TEXT NOT NULL,
+      risk_if_wrong TEXT NOT NULL,
+      first_signal TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ideas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT NOT NULL,
+      idea TEXT NOT NULL,
+      v1_decision TEXT NOT NULL,
+      trigger_to_revisit TEXT NOT NULL
+    );
   `);
 }
 
@@ -41,7 +91,17 @@ function daysFromToday(n) {
 }
 
 function seed() {
-  db.exec('DELETE FROM wedding; DELETE FROM tasks; DELETE FROM audit_log;');
+  db.exec(`
+    DELETE FROM wedding;
+    DELETE FROM tasks;
+    DELETE FROM audit_log;
+    DELETE FROM planner_profile;
+    DELETE FROM vendors;
+    DELETE FROM guests;
+    DELETE FROM budget_items;
+    DELETE FROM assumptions;
+    DELETE FROM ideas;
+  `);
   db.prepare('INSERT INTO wedding (id, couple, wedding_date, city, guest_count) VALUES (1, ?, ?, ?, ?)')
     .run('Sarah & Marcus', '2026-10-17', 'Charleston', 120);
   const ins = db.prepare(
@@ -55,7 +115,88 @@ function seed() {
   ins.run('Send planner the final song list', daysFromToday(14), 'couple', 'Charleston Sound DJ', 'open', now);
   ins.run('Order welcome bags', daysFromToday(21), 'planner', null, 'open', now);
   ins.run('Confirm hotel room block', daysFromToday(-20), 'planner', 'The Restoration Hotel', 'done', now);
+  seedSyntheticContext();
   audit('planner', 'Seeded wedding record (7 tasks) for Sarah & Marcus');
+}
+
+function seedSyntheticContext() {
+  db.prepare(`
+    INSERT INTO planner_profile
+      (id, name, company, market, active_weddings, pays_for_hitch, capacity_bottleneck)
+      VALUES (1, ?, ?, ?, ?, ?, ?)
+  `).run(
+    'Amelia Hart',
+    'Harbor & Ivory Events',
+    'Charleston',
+    14,
+    'planner',
+    'Client and vendor coordination across too many channels'
+  );
+
+  const vendor = db.prepare(`
+    INSERT INTO vendors (category, name, status, next_action, contract_amount, risk)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  [
+    ['Venue', 'The Cedar Room', 'walkthrough pending', 'Confirm walkthrough and floor-plan lock', 18200, 'medium'],
+    ['Florist', 'Petal & Stem Florals', 'deposit overdue', 'Draft deposit follow-up', 7400, 'high'],
+    ['Caterer', 'Lowcountry Catering Co.', 'tasting open', 'Book tasting and confirm headcount policy', 21600, 'high'],
+    ['DJ', 'Charleston Sound DJ', 'song list needed', 'Send final song list', 2800, 'low'],
+    ['Hotel block', 'The Restoration Hotel', 'confirmed', 'Monitor pickup threshold', 0, 'low'],
+    ['Rentals', 'King Street Rentals', 'quote pending', 'Compare chair upgrade quote', 6200, 'medium'],
+    ['Photographer', 'Lena Brooks Photography', 'timeline draft needed', 'Share ceremony timing', 5300, 'medium'],
+  ].forEach(row => vendor.run(...row));
+
+  const guest = db.prepare(`
+    INSERT INTO guests (party_name, relationship, party_size, rsvp_status, table_preference, constraint_notes)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  [
+    ['Henderson party', 'college friends', 2, 'declined', 'near dance floor', 'Decline moves caterer headcount and table 4 balance'],
+    ['Rivera family', 'bride family', 5, 'confirmed', 'family table', 'Two vegetarian meals'],
+    ['Marcus work group', 'groom colleagues', 8, 'pending', 'grouped together', 'Three unanswered RSVPs'],
+    ['Aunt Elaine', 'bride family', 1, 'confirmed', 'away from speakers', 'Mobility support'],
+    ['Patel party', 'neighbors', 4, 'pending', 'no preference', 'Child meal count unknown'],
+    ['College table', 'friends', 10, 'confirmed', 'near bar', 'High energy table'],
+  ].forEach(row => guest.run(...row));
+
+  const budget = db.prepare(`
+    INSERT INTO budget_items (category, estimate, committed, variance, dependency)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  [
+    ['Catering', 21000, 21600, 600, 'Final headcount and tasting selection'],
+    ['Florals', 6800, 7400, 600, 'Deposit must clear before centerpiece hold'],
+    ['Venue', 18000, 18200, 200, 'Walkthrough locks floor plan'],
+    ['Rentals', 5500, 6200, 700, 'Chair upgrade and linen color decision'],
+    ['Music', 3000, 2800, -200, 'Final song list'],
+    ['Hotel block', 0, 0, 0, 'Pickup threshold only'],
+    ['Welcome bags', 2400, 0, -2400, 'Guest count and hotel pickup'],
+  ].forEach(row => budget.run(...row));
+
+  const assumption = db.prepare(`
+    INSERT INTO assumptions (key, assumption, why_it_matters, risk_if_wrong, first_signal)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  [
+    ['planner-as-buyer', 'The planner pays; the couple uses the product.', 'Positioning and v2 packaging sell planner capacity, not only couple convenience.', 'If couple-paid, onboarding and pricing move closer to consumer wedding planning.', 'Planner asks for client-seat control or multi-wedding dashboard.'],
+    ['weekly-engagement', 'To-do and timeline work creates weekly return behavior.', 'The v1 wedge must address usage drop, not just a flashy planning moment.', 'If engagement is concentrated near wedding week, seating may outrank timeline.', 'Weekly active planning sessions do not improve after launch.'],
+    ['approval-tolerance', 'Users will approve grounded writes if the footprint is explicit.', 'Writeback is the moat; too much friction collapses the value.', 'If approvals feel like work, users stay in read-only advice mode.', 'Approval rate below target or repeated edits before approve.'],
+    ['record-accuracy', 'The shared wedding record is current enough to ground action.', 'Grounding only works if the product is trusted as the source of truth.', 'If planners maintain truth elsewhere, Hitch becomes another stale dashboard.', 'Planner corrections rise or vendors contradict the record.'],
+    ['reversal-trust', 'Reversed or edited writebacks measure trust erosion.', 'Trust needs a counter-metric that can kill autonomy.', 'If reversals are invisible, the agent can degrade quietly.', 'Writebacks reversed exceeds 15% after two iterations.'],
+  ].forEach(row => assumption.run(...row));
+
+  const idea = db.prepare(`
+    INSERT INTO ideas (key, idea, v1_decision, trigger_to_revisit)
+    VALUES (?, ?, ?, ?)
+  `);
+  [
+    ['generic-inspiration', 'Generic inspiration and trend advice', 'Ceded to ChatGPT/Pinterest in v1.', 'Revisit only if record-aware inspiration becomes differentiated.'],
+    ['seating-copilot', 'Seating copilot', 'Deferred because it is episodic, not weekly.', 'Revisit when timeline loop lifts engagement and guest data is reliable.'],
+    ['guest-list-copilot', 'Guest and RSVP copilot', 'Deferred behind to-do/timeline writeback.', 'Revisit when planner needs headcount automation and per-actor auth is ready.'],
+    ['planner-white-label', 'White-label planner packaging', 'Deferred to v2 offering.', 'Revisit when planner-side retention and audit trust are proven.'],
+    ['registry-thank-you', 'Registry gaps and thank-you follow-up', 'Roadmap after wedding-day planning.', 'Revisit when the record extends past the event into household setup.'],
+  ].forEach(row => idea.run(...row));
 }
 
 function audit(actor, action) {
@@ -64,13 +205,33 @@ function audit(actor, action) {
 }
 
 initSchema();
-if (!db.prepare('SELECT COUNT(*) AS n FROM wedding').get().n) seed();
+if (
+  !db.prepare('SELECT COUNT(*) AS n FROM wedding').get().n ||
+  !db.prepare('SELECT COUNT(*) AS n FROM planner_profile').get().n
+) seed();
 
 // ---------- data access ----------
 
 const getWedding = () => db.prepare('SELECT * FROM wedding WHERE id = 1').get();
 const getTasks = () => db.prepare('SELECT * FROM tasks ORDER BY due_date').all();
 const getAudit = () => db.prepare('SELECT * FROM audit_log ORDER BY id DESC LIMIT 20').all();
+const getPlanner = () => db.prepare('SELECT * FROM planner_profile WHERE id = 1').get();
+const getVendors = () => db.prepare('SELECT * FROM vendors ORDER BY id').all();
+const getGuests = () => db.prepare('SELECT * FROM guests ORDER BY id').all();
+const getBudget = () => db.prepare('SELECT * FROM budget_items ORDER BY id').all();
+const getAssumptions = () => db.prepare('SELECT * FROM assumptions ORDER BY id').all();
+const getIdeas = () => db.prepare('SELECT * FROM ideas ORDER BY id').all();
+const getPanelState = () => ({
+  wedding: getWedding(),
+  tasks: getTasks(),
+  audit: getAudit(),
+  planner: getPlanner(),
+  vendors: getVendors(),
+  guests: getGuests(),
+  budget: getBudget(),
+  assumptions: getAssumptions(),
+  ideas: getIdeas(),
+});
 const openTasks = () => getTasks().filter(t => t.status === 'open');
 const fmtDate = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US',
   { month: 'long', day: 'numeric', year: 'numeric' });
@@ -215,6 +376,90 @@ function approveAction(id, confirmed) {
   return { ok: true };
 }
 
+function agentPreview(scenario = 'hendersons_declined') {
+  const state = getPanelState();
+  const hendersons = state.guests.find(g => /Henderson/i.test(g.party_name));
+  const caterer = state.vendors.find(v => v.category === 'Caterer');
+  const rentals = state.vendors.find(v => v.category === 'Rentals');
+  const cateringBudget = state.budget.find(b => b.category === 'Catering');
+
+  const previews = {
+    hendersons_declined: {
+      scenario: 'hendersons_declined',
+      title: 'Hendersons decline after seating work has started',
+      reads: [
+        `wedding.guest_count = ${state.wedding.guest_count}`,
+        `guests.${hendersons?.party_name || 'Henderson party'} = ${hendersons?.party_size || 2} guests, ${hendersons?.rsvp_status || 'declined'}`,
+        `vendors.${caterer?.name || 'caterer'} risk = ${caterer?.risk || 'high'}`,
+        `budget.Catering committed = $${cateringBudget?.committed || 21600}`,
+      ],
+      agent_steps: [
+        'Detect the RSVP decline as a cross-party change, not a simple task completion.',
+        'Trace the cascade: guest count, caterer headcount, invoice exposure, and seating balance.',
+        'Classify by write policy: high value, reversible, but shared-state blast radius across planner and vendor.',
+        'Stop at human approval; do not write from the preview.',
+      ],
+      proposed_tools: [
+        { name: 'update_guest_count', args: { delta: -2 }, policy: 'gated' },
+        { name: 'flag_seating_rebalance', args: { table: 'table 4' }, policy: 'gated' },
+        { name: 'draft_caterer_note', args: { vendor: caterer?.name || 'Lowcountry Catering Co.' }, policy: 'human-send' },
+      ],
+      write_policy: 'gated: value is high and the change touches planner, vendor, and seating records.',
+      approval_needed: true,
+      would_write: false,
+      business_impact: 'Planner capacity improves because Hitch finds the cascade before Amelia has to reconcile three channels manually.',
+    },
+    seating_rebalance: {
+      scenario: 'seating_rebalance',
+      title: 'Late RSVP forces a seating and rentals check',
+      reads: [
+        'guests: table preference and constraint notes',
+        `vendors.${rentals?.name || 'rentals'} next_action = ${rentals?.next_action || 'compare quote'}`,
+        'budget.Rentals variance = chair upgrade exposure',
+        'tasks: venue walkthrough still open',
+      ],
+      agent_steps: [
+        'Group affected parties by table preference and constraint notes.',
+        'Identify which seating movement is reversible inside the record.',
+        'Hold vendor-facing messages for planner approval.',
+      ],
+      proposed_tools: [
+        { name: 'propose_table_move', args: { party: 'Henderson party', from: 'table 4' }, policy: 'gated' },
+        { name: 'log_seating_risk', args: { note: 'table 4 balance changed' }, policy: 'flows' },
+      ],
+      write_policy: 'mixed: internal notes can flow; table moves get approval; vendor sends are refused.',
+      approval_needed: true,
+      would_write: false,
+      business_impact: 'The planner sees a narrow seating exception instead of manually auditing the whole chart.',
+    },
+    planner_capacity: {
+      scenario: 'planner_capacity',
+      title: 'Planner asks what needs attention across the client record',
+      reads: [
+        `planner.active_weddings = ${state.planner?.active_weddings || 14}`,
+        'tasks: overdue and due-this-week work',
+        'vendors: high-risk open actions',
+        'assumptions: planner-as-buyer and reversal-trust',
+      ],
+      agent_steps: [
+        'Rank work by client-visible risk and vendor dependency.',
+        'Separate what Hitch can draft from what Amelia must decide.',
+        'Suggest the next two approvals, not a generic dashboard.',
+      ],
+      proposed_tools: [
+        { name: 'prioritize_vendor_queue', args: { limit: 2 }, policy: 'read-only' },
+        { name: 'draft_client_update', args: { audience: 'couple' }, policy: 'human-send' },
+      ],
+      write_policy: 'read-first: planner console prioritizes, drafts, and stops before external sends.',
+      approval_needed: true,
+      would_write: false,
+      business_impact: 'This is the v2 paid surface: capacity without headcount, grounded in the same shared record.',
+    },
+  };
+
+  return { preview: true, ...(previews[scenario] || previews.hendersons_declined) };
+}
+
 // ---------- http ----------
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
@@ -227,7 +472,7 @@ function json(res, code, obj) {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/api/state') {
-    return json(res, 200, { wedding: getWedding(), tasks: getTasks(), audit: getAudit() });
+    return json(res, 200, getPanelState());
   }
   if (req.method === 'POST') {
     let body = '';
@@ -235,6 +480,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       const data = body ? JSON.parse(body) : {};
       if (url.pathname === '/api/copilot') return json(res, 200, copilot(data.message || ''));
+      if (url.pathname === '/api/agent-preview') return json(res, 200, agentPreview(data.scenario));
       if (url.pathname === '/api/approve') {
         const r = approveAction(data.id, !!data.confirmed);
         return json(res, r.status || 200, r);

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch Planning — Assumptions</title>
+<link rel="stylesheet" href="/panel.css">
+</head>
+<body class="panel-shell">
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/panel.html">Review</a>
+  <a href="/">Demo</a>
+  <a href="/prd.html">PRD</a>
+  <a class="primary" href="/assumptions.html">Assumptions</a>
+  <a href="/architecture.html">Architecture</a>
+  <a href="/decisions.html">Questions</a>
+  <a href="/next.html">Roadmap</a>
+  <a href="/">Back to demo</a>
+</aside>
+
+<header class="panel-top">
+  <div>
+    <p class="panel-eyebrow">Hitch Planning · assumptions and deferred ideas</p>
+    <h1 class="panel-title">Inspectable, not apologetic.</h1>
+    <p class="panel-dek">These are the bets underneath the PRD. The point is to name what would make the v1 wrong early enough that the team can change course.</p>
+    <div class="panel-actions">
+      <a class="primary" href="/prd.html">Back to PRD</a>
+      <a href="/next.html#agent-preview">Roadmap preview</a>
+    </div>
+  </div>
+</header>
+
+<main class="panel-main">
+  <section class="panel-section">
+    <p class="panel-label">Assumptions</p>
+    <h2>What must be true for v1 to work.</h2>
+    <table class="assumption-table">
+      <thead>
+        <tr>
+          <th>Assumption</th>
+          <th>Why it matters</th>
+          <th>Risk if wrong</th>
+          <th>First signal</th>
+        </tr>
+      </thead>
+      <tbody id="assumption-rows">
+        <tr><td colspan="4">Loading assumptions from the record...</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel-section">
+    <p class="panel-label">Ideas considered</p>
+    <h2>Deferred deliberately, not forgotten.</h2>
+    <table class="idea-table">
+      <thead>
+        <tr>
+          <th>Idea</th>
+          <th>V1 decision</th>
+          <th>Trigger to revisit</th>
+        </tr>
+      </thead>
+      <tbody id="idea-rows">
+        <tr><td colspan="3">Loading ideas from the record...</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+(function(){
+  const esc = s => String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  fetch('/api/state')
+    .then(r => r.json())
+    .then(state => {
+      document.getElementById('assumption-rows').innerHTML = state.assumptions.map(a => `
+        <tr>
+          <td><strong>${esc(a.assumption)}</strong></td>
+          <td>${esc(a.why_it_matters)}</td>
+          <td>${esc(a.risk_if_wrong)}</td>
+          <td>${esc(a.first_signal)}</td>
+        </tr>`).join('');
+      document.getElementById('idea-rows').innerHTML = state.ideas.map(i => `
+        <tr>
+          <td><strong>${esc(i.idea)}</strong></td>
+          <td>${esc(i.v1_decision)}</td>
+          <td>${esc(i.trigger_to_revisit)}</td>
+        </tr>`).join('');
+    })
+    .catch(() => {
+      document.getElementById('assumption-rows').innerHTML = '<tr><td colspan="4">Record unavailable.</td></tr>';
+      document.getElementById('idea-rows').innerHTML = '<tr><td colspan="3">Record unavailable.</td></tr>';
+    });
+})();
+</script>
+</body>
+</html>

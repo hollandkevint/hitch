@@ -128,8 +128,19 @@ body.js-reveal section.in { opacity: 1; transform: none; }
 }
 nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </style>
+<link rel="stylesheet" href="/panel.css">
 </head>
 <body>
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/panel.html">Review</a>
+  <a href="/">Demo</a>
+  <a href="/prd.html">PRD</a>
+  <a href="/assumptions.html">Assumptions</a>
+  <a href="/architecture.html">Architecture</a>
+  <a href="/decisions.html">Questions</a>
+  <a class="primary" href="/next.html">Roadmap</a>
+  <a href="/">Back to demo</a>
+</aside>
 
 <div class="masthead">
   <div class="masthead-inner">
@@ -142,9 +153,9 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
           <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
         </svg>
       </span>
-      <h1>A real model, the same contract</h1>
+      <h1>Roadmap and preview</h1>
     </div>
-    <p class="dek">Going live changes almost nothing &mdash; that&rsquo;s the point. Then the business: the couple is the wedge, the planner is the buyer.</p>
+    <p class="dek">The v1 contract stays narrow. The v2 offering adds seating, guests, planner capacity, and a simulated agent trace that stops before every write.</p>
     <p class="byline">Kevin Holland &middot; July 2026</p>
     <div class="hub">
       <a href="/">Live app <span class="arw">&rarr;</span></a>
@@ -185,6 +196,45 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </section>
 
 <section>
+  <p class="kicker">Roadmap and offering preview</p>
+  <h2>The next surfaces are planner-capacity products.</h2>
+  <ul class="ledger">
+    <li>
+      <span class="call">v2 seating copilot</span>
+      <span class="why">Read guest constraints, table preferences, and vendor dependencies; propose narrow table changes; stop for approval before changing the chart.</span>
+    </li>
+    <li>
+      <span class="call">Guest and RSVP copilot</span>
+      <span class="why">Turn late RSVP movement into headcount, budget, seating, and vendor-impact drafts instead of leaving that reconciliation in the planner&rsquo;s inbox.</span>
+    </li>
+    <li>
+      <span class="call">Planner console</span>
+      <span class="why">Rank attention across the client record by vendor risk and client-visible dependencies, so one planner can carry more active weddings without losing taste.</span>
+    </li>
+    <li>
+      <span class="call">White-label planner packaging</span>
+      <span class="why">Let planners sell the experience under their own brand while Hitch supplies the governed record, audit trail, and approval path underneath.</span>
+    </li>
+  </ul>
+</section>
+
+<section id="agent-preview">
+  <p class="kicker">v2 preview - no writes in this build</p>
+  <h2>Simulated active-agent trace.</h2>
+  <p class="lead">This is a deterministic preview of how the richer record would drive the next offering. It reads planner, guest, vendor, and budget context; proposes tools; classifies the write policy; and stops for human approval.</p>
+  <div class="preview-panel">
+    <div class="preview-controls" role="group" aria-label="Agent preview scenarios">
+      <button type="button" class="active" data-scenario="hendersons_declined">Hendersons declined</button>
+      <button type="button" data-scenario="seating_rebalance">Seating rebalance</button>
+      <button type="button" data-scenario="planner_capacity">Planner capacity</button>
+    </div>
+    <div id="preview-card" class="preview-card" aria-live="polite">
+      <p>Loading v2 preview trace...</p>
+    </div>
+  </div>
+</section>
+
+<section>
   <p class="kicker">The business</p>
   <h2>B2B2C: the couple is the wedge, the planner is the buyer</h2>
   <p>The planner pays us; the couple uses us. Every couple action lands in the record the planner runs their business on, so the couple&rsquo;s weekly re-engagement compounds into the planner&rsquo;s capacity &mdash; one planner runs more weddings without diluting their taste. That&rsquo;s the sell on each side of the seam: to couples, <em>the assistant that actually knows your wedding</em>; to planners, capacity without headcount.</p>
@@ -200,6 +250,10 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   var secs = document.querySelectorAll('main section');
   if (!secs.length || !('IntersectionObserver' in window)) return;
   document.body.classList.add('js-reveal');
+  if (location.hash) {
+    var target = document.querySelector(location.hash);
+    if (target && target.matches('section')) target.classList.add('in');
+  }
   var io = new IntersectionObserver(function(es){
     es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
@@ -210,6 +264,60 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
       if (s.getBoundingClientRect().top < innerHeight * 1.1) s.classList.add('in');
     });
   }, 500); });
+})();
+</script>
+<script>
+(function(){
+  var slot = document.getElementById('preview-card');
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('[data-scenario]'));
+  if (!slot || !buttons.length) return;
+  var esc = function(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  };
+  var list = function(items) {
+    return '<ul>' + items.map(function(item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul>';
+  };
+  var tools = function(items) {
+    return items.map(function(tool) {
+      return '<span class="tool-pill">' + esc(tool.name) + ' · ' + esc(tool.policy) + ' · ' + esc(JSON.stringify(tool.args)) + '</span>';
+    }).join('');
+  };
+  var setActive = function(scenario) {
+    buttons.forEach(function(button) {
+      button.classList.toggle('active', button.dataset.scenario === scenario);
+    });
+  };
+  var load = function(scenario) {
+    setActive(scenario);
+    slot.innerHTML = '<p>Loading v2 preview trace...</p>';
+    fetch('/api/agent-preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: scenario })
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(preview) {
+        slot.innerHTML = [
+          '<h3>' + esc(preview.title) + '</h3>',
+          '<p class="panel-small"><strong>Scenario:</strong> ' + esc(preview.scenario) + '</p>',
+          '<p><strong>Reads</strong></p>' + list(preview.reads || []),
+          '<p><strong>Agent steps</strong></p><ol>' + (preview.agent_steps || []).map(function(step) { return '<li>' + esc(step) + '</li>'; }).join('') + '</ol>',
+          '<p><strong>Proposed tools</strong></p><p>' + tools(preview.proposed_tools || []) + '</p>',
+          '<p><strong>Write policy:</strong> ' + esc(preview.write_policy) + '</p>',
+          '<p><strong>Business impact:</strong> ' + esc(preview.business_impact) + '</p>',
+          '<div class="preview-warning">v2 preview - no writes in this build · approval_needed: ' + esc(preview.approval_needed) + ' · would_write: ' + esc(preview.would_write) + '</div>'
+        ].join('');
+      })
+      .catch(function() {
+        slot.innerHTML = '<p>Preview unavailable. The v2 simulation is read-only and can be retried after the server is warm.</p>';
+      });
+  };
+  buttons.forEach(function(button) {
+    button.addEventListener('click', function() { load(button.dataset.scenario); });
+  });
+  load('hendersons_declined');
 })();
 </script>
 </body>

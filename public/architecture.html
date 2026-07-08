@@ -171,8 +171,19 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   .diagram .n-refuse .mark-x { opacity: 1 !important; }
 }
 </style>
+<link rel="stylesheet" href="/panel.css">
 </head>
 <body>
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/panel.html">Review</a>
+  <a href="/">Demo</a>
+  <a href="/prd.html">PRD</a>
+  <a href="/assumptions.html">Assumptions</a>
+  <a class="primary" href="/architecture.html">Architecture</a>
+  <a href="/decisions.html">Questions</a>
+  <a href="/next.html">Roadmap</a>
+  <a href="/">Back to demo</a>
+</aside>
 
 <div class="masthead">
   <div class="masthead-inner">
@@ -273,6 +284,26 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     <p class="lbl">Why this is the point, not a wedding toy</p>
     <p>Swap the wedding's <code>tasks</code> table for a real domain ontology and the architecture is identical: atomic tools over a governed system of record, an approval gate, and an eval set that catches wrong actions. The wedding is a stand-in for the pattern, a governed record an agent can act on without drifting. I built the small version so the real one is a conversation, not a leap.</p>
   </div>
+</section>
+
+<section id="panel-challenge">
+  <p class="kicker">Panel challenge mode</p>
+  <h2>Questions to improve the contract.</h2>
+  <p class="lead">These are collaboration prompts, not defenses. Each should change the next version if the room has a sharper answer.</p>
+  <ul class="ledger">
+    <li>
+      <span class="call">Designer</span>
+      <span class="why">Where should the footprint line live so it informs without slowing the user?</span>
+    </li>
+    <li>
+      <span class="call">Engineering Manager</span>
+      <span class="why">Would you revalidate at commit time or move this into the tool layer?</span>
+    </li>
+    <li>
+      <span class="call">PMM</span>
+      <span class="why">Would you sell &ldquo;AI that knows your wedding&rdquo; or &ldquo;planner capacity without headcount&rdquo; first?</span>
+    </li>
+  </ul>
 </section>
 <div class="colophon">
   <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>

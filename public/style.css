@@ -156,7 +156,7 @@ button.edit {
 
 @media (max-width: 820px) { main { grid-template-columns: 1fr; padding: 20px; } header { padding: 18px 20px; } }
 
-/* ── craft upgrade (presentation only; app.js untouched) ─────────────────── */
+/* ── craft upgrade ───────────────────────────────────────────────────────── */
 :root { --ease: cubic-bezier(0.22, 1, 0.36, 1); --display: "Fraunces", Georgia, "Times New Roman", serif; }
 
 /* subtle paper depth, matched to the series pages */
@@ -180,6 +180,51 @@ section { box-shadow: 0 1px 2px rgba(58,50,38,0.04), 0 8px 24px -18px rgba(38,48
 button.approve { transition: background 0.18s var(--ease), transform 0.12s var(--ease); }
 button.approve:active { transform: translateY(1px); }
 .confirm-dialog { animation: dialogIn 0.34s var(--ease) both; }
+
+.record-depth {
+  max-width: 1180px;
+  margin: 18px auto 0;
+  padding: 0 36px;
+  font-family: var(--sans);
+}
+.record-depth summary {
+  cursor: pointer;
+  width: fit-content;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--forest);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.record-depth-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.record-depth-grid article {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 15px;
+}
+.record-depth-grid h3 {
+  margin: 0 0 7px;
+  color: var(--forest);
+}
+.record-depth-grid p {
+  color: var(--ink);
+  font-size: 0.82rem;
+  line-height: 1.42;
+}
+@media (max-width: 820px) {
+  .record-depth { padding: 0 20px; }
+  .record-depth-grid { grid-template-columns: 1fr; }
+}
 
 /* the writeback made visible — rows settle into Done, the action card and
    replies arrive, the audit trail gains its entry. All CSS: fires on the

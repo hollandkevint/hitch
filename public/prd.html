@@ -128,8 +128,19 @@ body.js-reveal section.in { opacity: 1; transform: none; }
 }
 nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </style>
+<link rel="stylesheet" href="/panel.css">
 </head>
 <body>
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/panel.html">Review</a>
+  <a href="/">Demo</a>
+  <a class="primary" href="/prd.html">PRD</a>
+  <a href="/assumptions.html">Assumptions</a>
+  <a href="/architecture.html">Architecture</a>
+  <a href="/decisions.html">Questions</a>
+  <a href="/next.html">Roadmap</a>
+  <a href="/">Back to demo</a>
+</aside>
 
 <div class="masthead">
   <div class="masthead-inner">
@@ -181,6 +192,20 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <div class="callout">
     <p class="lbl">How to read it</p>
     <p>The bet is the seam: the couple&rsquo;s re-engagement is the wedge, the planner&rsquo;s capacity is the business. Everything the copilot writes lands in the record the planner runs their business on &mdash; see <a href="/governance.html">governance</a> for how writes are gated, and <a href="/decisions.html">decisions</a> for what was traded away.</p>
+  </div>
+  <div class="proof-links" aria-label="Supporting surfaces for the PRD">
+    <a href="/#record-depth">
+      <b>Proof in demo</b>
+      <span>The record, writeback, and audit trail the PRD depends on.</span>
+    </a>
+    <a href="/assumptions.html">
+      <b>Assumptions</b>
+      <span>The risky bets, first signals, and ideas held out of v1.</span>
+    </a>
+    <a href="/next.html#agent-preview">
+      <b>Roadmap</b>
+      <span>The v2 offering preview and read-only agent trace.</span>
+    </a>
   </div>
 </section>
 <div class="colophon">

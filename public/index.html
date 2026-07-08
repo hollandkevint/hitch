@@ -8,8 +8,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="/panel.css">
 </head>
 <body>
+<aside class="panel-rail" aria-label="Panel controls">
+  <a href="/panel.html">Review</a>
+  <a class="primary" href="/">Demo</a>
+  <a href="/prd.html">PRD</a>
+  <a href="/assumptions.html">Assumptions</a>
+  <a href="/architecture.html">Architecture</a>
+  <a href="/decisions.html">Questions</a>
+  <a href="/next.html">Roadmap</a>
+  <a href="/">Back to demo</a>
+</aside>
 <header>
   <div class="brand">
     <span class="mark" aria-hidden="true">
@@ -42,6 +53,13 @@
     <a style="font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7d7a72;text-decoration:none;" href="/next.html">What&rsquo;s next</a>
   </div>
 </nav>
+
+<details id="record-depth" class="record-depth">
+  <summary>Record depth: planner, vendors, guests, budget</summary>
+  <div class="record-depth-grid" id="record-depth-grid" aria-live="polite">
+    <p>Loading the shared wedding record...</p>
+  </div>
+</details>
 
 
 <main id="couple-view" role="tabpanel" aria-labelledby="btn-couple">
