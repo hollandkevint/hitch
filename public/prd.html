@@ -183,17 +183,17 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 <section>
   <h2>One page, one bet</h2>
   <p class="lead">The PRD is deliberately capped below 300 words: a complete, readable product bet with problem, evidence, solution, success, QA/evals, assumptions, scope, and team asks. The <a href="/">running prototype</a> and <a href="/process.html">process page</a> carry the rest of the proof.</p>
-  <p><strong>Problem.</strong> Usage is dropping: planners and their clients get better planning help from ChatGPT than from Hitch&rsquo;s static guest list, seating, and to-do tools. We hold the wedding record, but we do not turn it into next actions. Planner pays for a system of record nobody opens.</p>
-  <p><strong>Evidence.</strong> Interviews point to thinking work leaving the product: &ldquo;what&rsquo;s next?&rdquo;, vendor follow-up, RSVP anxiety. ChatGPT can advise generally, but it cannot see this wedding: who confirmed, what is late, which vendors are booked, or what a change cascades to. A planner&rsquo;s memory does not scale.</p>
-  <p><strong>Solution (v1).</strong> Put a copilot inside to-do/timeline. It answers &ldquo;what&rsquo;s left?&rdquo; from the live record, drafts the next action, and, after approval, writes back: task done, timeline updated, vendor logged. One high-frequency job end to end, not a chat tab.</p>
-  <p><strong>Success.</strong> Primary: weekly active planning sessions per active wedding. Input: 40% of to-do updates start in copilot. Buyer proof: approved writebacks that reduce planner follow-up. Counter-metric: reversed/edited writebacks; kill writeback if reversals stay above 15% after two iterations.</p>
+  <p><strong>Problem.</strong> Usage is dropping: planners and their clients get better planning help from ChatGPT than from Hitch&rsquo;s static guest lists, seating, and to-dos. The planner pays for a record she babysits &mdash; she does the chasing and nudging, and it goes stale when anyone stops typing. Coordination, not creative work, caps how many weddings she can take.</p>
+  <p><strong>Evidence.</strong> Interviews show thinking work leaving: &ldquo;what&rsquo;s next?&rdquo;, vendor follow-up, RSVP anxiety. ChatGPT advises generally but cannot see this wedding &mdash; who confirmed, what is late, what a change cascades to &mdash; and cannot act. A planner&rsquo;s memory does not scale; neither do her hours.</p>
+  <p><strong>Solution (v1).</strong> Make the record work for the planner. The copilot in to-do/timeline watches live state and initiates: flags the late florist deposit, drafts the follow-up, chases open decisions. After approval it writes back: task done, timeline updated, vendor logged. Couples keep it fresh because it keeps their day on track and on budget; every action feeds the record the planner trusts. The record exposes governed, atomic actions &mdash; our copilot is the first agent allowed to use them.</p>
+  <p><strong>Success.</strong> Primary: follow-ups drafted&rarr;approved per active wedding &mdash; work done instead of the planner. North star: weddings per planner without new headcount. Counter-metric: reversed writebacks; kill it if reversals stay above 15% after two iterations.</p>
   <p><strong>QA/evals.</strong> Seven binary evals gate release: grounded tasks, correct vendor/date, declared writes only, server-side approval on high-stakes changes, ungroundable handoff, no false-cheer judgment writes, injection safety.</p>
-  <p><strong>Assumptions.</strong> Planner is buyer; client-side usage is the wedge; users will approve visible writes; record freshness is good enough.</p>
-  <p><strong>Out of scope.</strong> Generic inspiration; seating/guest copilots; white-label planner packaging.</p>
-  <p><strong>Team.</strong> Design: in-context action cards. Eng: retrieval, writeback, eval gate. PMM: &ldquo;the assistant that actually knows your wedding&rdquo; plus planner capacity without headcount.</p>
+  <p><strong>Assumptions.</strong> Planner is buyer; couple engagement keeps the record fresh; visible approved writes build trust.</p>
+  <p><strong>Out of scope (v1).</strong> Invoicing and payments, email ingestion, follow-on services (v2); external agents (v3); generic inspiration &mdash; ceded to ChatGPT.</p>
+  <p><strong>Team.</strong> Design: in-context action cards. Eng: retrieval, writeback, eval gate. PMM: &ldquo;the record that works for the planner&rdquo; &mdash; capacity without headcount.</p>
   <div class="callout">
     <p class="lbl">How to read it</p>
-    <p>The product bet is a B2B2C data product: couples create the usage wedge, planners buy the capacity gain, and the agent only earns autonomy by passing the QA/eval contract.</p>
+    <p>The product bet is a B2B2C data product: the planner buys capacity, the couple keeps the record true &mdash; like a CRM whose reps actually keep it updated &mdash; and the agent earns autonomy only by passing the QA/eval contract.</p>
   </div>
   <div class="proof-links" aria-label="Supporting surfaces for the PRD">
     <a href="/#record-depth">
@@ -210,7 +210,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     </a>
   </div>
 </section>
-<blockquote class="pull">&ldquo;Couples create the usage wedge, planners buy the capacity gain, and the agent only earns autonomy by passing the QA/eval contract.&rdquo;<cite>The bet</cite></blockquote>
+<blockquote class="pull">&ldquo;The planner buys capacity; the couple keeps the record true; the agent earns autonomy only by passing the eval contract.&rdquo;<cite>The bet</cite></blockquote>
 
 <div class="colophon">
   <p><strong>Hitch Planning</strong> &middot; a working prototype: one <code>server.js</code> on <code>node:http</code>, storage behind a two-line adapter &mdash; Postgres on Railway in production, zero-dependency <code>node:sqlite</code> locally. One command runs it, one more runs the eval set against either backend. Written and built by Kevin Holland, July 2026.</p>

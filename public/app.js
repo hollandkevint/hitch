@@ -69,9 +69,20 @@ async function refresh() {
     window.__greeted = true;
     const hour = new Date().getHours();
     const late = hour >= 21 || hour < 5;
+    // Planner-first: Hitch initiates. It surfaces the most-overdue open item and
+    // offers to act, instead of waiting to be asked "what's left?".
+    const overdue = open
+      .filter(t => daysLate(t.due_date) > 0)
+      .sort((a, b) => daysLate(b.due_date) - daysLate(a.due_date));
+    const top = overdue[0];
+    // addMsg writes via textContent (injection-safe by construction), so pass raw
+    // strings here — esc() would double-escape "&" in a vendor name.
+    const lead = top
+      ? `${top.vendor ? top.vendor + ' — ' : ''}${top.title} is ${daysLate(top.due_date)} days past due. Want me to draft the follow-up? I can also mark anything you've already handled.`
+      : `Nothing's overdue right now — want me to line up what's next before it slips?`;
     addMsg('bot', late
-      ? `Planning after hours — that's most couples, honestly. You're ${weeksOut} weeks out and ${open.length} items are open. Ask what's left, and I'll keep it short.`
-      : `You're ${weeksOut} weeks out and ${open.length} items are open. Ask what's left, or tell me what changed.`);
+      ? `Planning after hours — that's most couples, honestly. You're ${weeksOut} weeks out with ${open.length} open. ${lead}`
+      : `You're ${weeksOut} weeks out with ${open.length} items open. ${lead}`);
   }
 }
 
