@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" role="img" aria-labelledby="t d">
+  <title id="t">Hitch process sketch</title>
+  <desc id="d">A hand-drawn style process map from brief and PRD read through research, sketches, prototypes, Railway deployment, and review gates.</desc>
+  <rect width="920" height="520" fill="#fffdf9"/>
+  <defs>
+    <style>
+      .box{fill:#fffdf9;stroke:#2b4a3e;stroke-width:3;rx:18;ry:18}.thin{stroke:#b4532a;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}.line{stroke:#2b4a3e;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}.dash{stroke-dasharray:9 9}.h{font:700 18px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#2b4a3e}.s{font:14px -apple-system,Segoe UI,Arial,sans-serif;fill:#26302b}.k{font:700 12px -apple-system,Segoe UI,Arial,sans-serif;letter-spacing:.12em;fill:#b4532a;text-transform:uppercase}
+    </style>
+  </defs>
+  <path class="line" d="M70 110 C170 76 260 84 348 116"/>
+  <path class="thin dash" d="M90 400 C250 465 555 462 815 395"/>
+  <rect class="box" x="42" y="54" width="180" height="116" rx="18"/>
+  <text class="k" x="66" y="86">phase 1</text><text class="h" x="66" y="114">Brief + PRD</text><text class="s" x="66" y="141">problem, current state,</text><text class="s" x="66" y="161">metrics, evidence, evals</text>
+  <rect class="box" x="278" y="54" width="188" height="116" rx="18"/>
+  <text class="k" x="302" y="86">phase 2</text><text class="h" x="302" y="114">Research</text><text class="s" x="302" y="141">inputs, needs, planner</text><text class="s" x="302" y="161">workflow, NotebookLM</text>
+  <rect class="box" x="536" y="54" width="210" height="116" rx="18"/>
+  <text class="k" x="560" y="86">sketch</text><text class="h" x="560" y="114">Problem space</text><text class="s" x="560" y="141">couple use wedge +</text><text class="s" x="560" y="161">planner buyer capacity</text>
+  <path class="line" d="M224 112 C246 108 255 108 278 112"/><path class="line" d="M467 112 C494 111 511 111 536 112"/>
+  <path class="line" d="M154 196 C278 248 550 250 715 198"/>
+  <rect class="box" x="84" y="250" width="218" height="116" rx="18"/>
+  <text class="k" x="108" y="282">prototype ladder</text><text class="h" x="108" y="310">Artifacts -> Lovable</text><text class="s" x="108" y="337">fast screens, then</text><text class="s" x="108" y="357">stateful product claim</text>
+  <rect class="box" x="354" y="250" width="210" height="116" rx="18"/>
+  <text class="k" x="378" y="282">build</text><text class="h" x="378" y="310">Railway + SQLite</text><text class="s" x="378" y="337">questionnaire, record,</text><text class="s" x="378" y="357">approval, audit trail</text>
+  <rect class="box" x="630" y="250" width="214" height="116" rx="18"/>
+  <text class="k" x="654" y="282">review gates</text><text class="h" x="654" y="310">Code + doc review</text><text class="s" x="654" y="337">adversarial read, design</text><text class="s" x="654" y="357">polish, seven evals</text>
+  <path class="line" d="M303 308 C323 308 333 308 354 308"/><path class="line" d="M565 308 C589 308 604 308 630 308"/>
+  <path class="thin" d="M444 195 C464 183 483 184 498 198 C480 213 462 214 444 195Z"/>
+  <text class="h" x="388" y="214">write policy</text><text class="s" x="358" y="235">draft path != commit path</text>
+  <path class="thin" d="M790 92 C820 130 820 170 790 208"/><path class="thin" d="M800 126 L836 126"/><path class="thin" d="M800 174 L836 174"/>
+  <text class="s" x="766" y="236">B2B2C lens:</text><text class="s" x="766" y="257">couple uses,</text><text class="s" x="766" y="278">planner buys</text>
+</svg>

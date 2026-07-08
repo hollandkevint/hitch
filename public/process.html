@@ -128,13 +128,23 @@ body.js-reveal section.in { opacity: 1; transform: none; }
 }
 nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </style>
+<style id="process-sketch-style">
+.process-sketch { margin: 26px 0 8px; }
+.process-sketch img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+.process-sketch figcaption { font-family: var(--sans); font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+.process-phase { list-style: none; margin: 22px 0 10px; padding: 0; }
+.process-phase li { border-top: 1px solid var(--line); padding: 17px 0; }
+.process-phase b { display: block; font-family: var(--sans); color: var(--forest); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
+.process-phase span { display: block; max-width: 66ch; font-family: var(--sans); font-size: 0.92rem; line-height: 1.5; color: var(--ink); }
+</style>
 <link rel="stylesheet" href="/panel.css">
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Review</a>
+  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
+  <a class="primary" href="/process.html">Process</a>
   <a href="/assumptions.html">Assumptions</a>
   <a href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
@@ -155,7 +165,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
       </span>
       <h1>Build first, spec from the build</h1>
     </div>
-    <p class="dek">Five evals before the product code, a working system before the PRD, and an eval set that grew from watching it fail.</p>
+    <p class="dek">Manual product thinking, research, sketches, prototype ladders, Railway deployment, and review passes before the panel.</p>
     <p class="byline">Kevin Holland &middot; July 2026</p>
     <div class="hub">
       <a href="/">Live app <span class="arw">&rarr;</span></a>
@@ -179,11 +189,20 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 
 <main>
 <section>
-<h2>Build first, evaluate from the build, then write the spec</h2>
-  <p class="lead">I didn't write a long spec and hand it off. I wrote five evals before the product code, built the working thing, and evaluated from it — and error analysis during the build grew the set to seven. When the build is nearly free, the prototype becomes the specification, and the eval set becomes the definition of correct.</p>
-  <p>The sequence, in order: define what the agent must <em>never</em> do (five binary evals, written first) before a line of product code; build a real, running system, zero dependencies, so the mechanics are inspectable end to end; run the evals against the real server logic, not mocks, and let error analysis grow the set (a steady-counsel check and an injection-safety check earned their way in during the build); then write the 300-word PRD from a thing that already works. Prototyping-as-specification, not spec-then-prototype.</p>
-  <p class="pull">The eval set is the spec. I defined wrong before I built.</p>
-  <p>The very first screens were Lovable mocks &mdash; the right tool for reacting to a layout in minutes, the wrong tool for proving state &mdash; and the build deliberately left them behind (the <a href="/decisions.html">decisions page</a> carries that call). From there, tooling was Claude Code driving a zero-dependency Node app, <code>node:http</code> plus <code>node:sqlite</code>, deployed on Railway for real persistence. Zero deps was a deliberate constraint: every moving part, the tools, the gate, the audit trail, the evals, is legible in one file with nothing hidden behind a framework. The governance is the product, so the governance had to be readable.</p>
+  <h2>How the PRD became a working product</h2>
+  <p class="lead">The process story is the product judgment: start with the brief, get to a clean problem, build multiple artifacts, then make the demo prove the PRD instead of asking the room to imagine it.</p>
+  <figure class="process-sketch">
+    <img src="/process-sketch.svg" alt="Hand-drawn process sketch showing brief, PRD read, research, architecture sketch, prototype ladder, Railway build, and review passes">
+    <figcaption>Sketch inserted for the panel: problem space on the left, architecture and write policy on the right, and the prototype ladder across the bottom.</figcaption>
+  </figure>
+  <ul class="process-phase">
+    <li><b>1. Initial read and product framing</b><span>Read the exercise PRD, wrote the high-level problem and decision basics, mapped the current state, then forced the first pass to name metrics, evidence quality, assumptions, and QA/eval gates.</span></li>
+    <li><b>2. Research and problem sketching</b><span>Used manual write-ups, interview notes, wedding-planning research prompts, and NotebookLM source planning to stay close to user inputs, needs, and the planner/couple workflow. Sketched the problem space and architecture before polishing copy.</span></li>
+    <li><b>3. Prototype ladder</b><span>Started with quick artifacts and visual mocks, then moved through Claude Artifacts and Lovable-style prototype prompting into a real app shape. Used Claude Code and Compound Engineering passes to turn the Google Doc PRD into a working, inspectable build context.</span></li>
+    <li><b>4. Governed build</b><span>Built the questionnaire, record depth, planner view, approval gate, and audit trail in a Railway-deployed Node app with SQLite persistence. The architecture stayed centered on data governance: draft path writes nothing, commit path is server-gated, evals decide release.</span></li>
+    <li><b>5. Review hardening</b><span>Ran code-review and doc-review passes, adversarial reads, and design polish. The output is not a slide: it is one live URL with the demo, PRD, assumptions, architecture, questions, and v2 preview ready for a panel working session.</span></li>
+  </ul>
+  <p class="pull">The point is not that the prototype is perfect. The point is that the PRD, evals, architecture, and demo are the same product argument.</p>
 </section>
 <div class="colophon">
   <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>

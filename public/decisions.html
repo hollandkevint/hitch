@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hitch Planning &mdash; Decisions</title>
+<title>Hitch Planning &mdash; Questions</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   :root {
@@ -132,9 +132,10 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Review</a>
+  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
+  <a href="/process.html">Process</a>
   <a href="/assumptions.html">Assumptions</a>
   <a href="/architecture.html">Architecture</a>
   <a class="primary" href="/decisions.html">Questions</a>
@@ -144,7 +145,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 
 <div class="masthead">
   <div class="masthead-inner">
-    <p class="eyebrow">Hitch Planning &middot; 04 &middot; Decisions</p>
+    <p class="eyebrow">Hitch Planning &middot; 05 &middot; Questions</p>
     <div class="mast-brand">
       <span class="mast-mark" aria-hidden="true">
         <svg viewBox="0 0 56 34" width="56" height="34">
@@ -153,9 +154,9 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
           <circle cx="21" cy="17" r="11" fill="none" stroke="#f2f0e9" stroke-width="2.8"/>
         </svg>
       </span>
-      <h1>The calls, and what each traded away</h1>
+      <h1>Questions for the Hitch team</h1>
     </div>
-    <p class="dek">The engineering decisions, plus the open questions we push on in design review &mdash; each with its current answer and the hardening step it points at.</p>
+    <p class="dek">Questions Kevin can ask the panel while they roleplay as Hitch design, engineering, PMM, data/product, and operating leaders.</p>
     <p class="byline">Kevin Holland &middot; July 2026</p>
     <div class="hub">
       <a href="/">Live app <span class="arw">&rarr;</span></a>
@@ -179,82 +180,32 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 
 <main>
 <section>
-<h2>The engineering calls, and what each traded away</h2>
+  <h2>Ask the panel as Hitch teammates, not judges.</h2>
+  <p class="lead">This page is the handoff surface. The goal is to invite the room into the next product call: what would they change if they owned design, engineering, data/product, PMM, or operating metrics for Hitch?</p>
   <ul class="ledger">
-    <li>
-      <span class="call">A deterministic rule engine plays the model on stage</span>
-      <span class="why"><b>instead of</b> a live LLM call in the demo. The model is commodity and swappable behind the same atomic tools. Keeping it deterministic forces the conversation onto the part that isn't commodity, the governed write path, not prompt quality. Every sentence is interpolated from live rows, so it's grounded by construction.</span>
-    </li>
-    <li>
-      <span class="call">Split <code>draft</code> from <code>commit</code>, enforce the gate server-side</span>
-      <span class="why"><b>instead of</b> a UI-only confirm. A UI gate is a suggestion. Writes execute only inside <code>/api/approve</code>, keyed by a server-held id; replay a high-stakes approve with <code>confirmed:false</code> and the server rejects it, writes nothing. That's what eval 4 tests.</span>
-    </li>
-    <li>
-      <span class="call">Atomic typed tools, not one bundled action</span>
-      <span class="why"><b>instead of</b> a single <code>plan_wedding</code> call. Small operations keep the blast radius declared and testable: approve flips exactly the declared rows and nothing else. It's also what makes the model swap-in trivial, the tool contract doesn't change.</span>
-    </li>
-    <li>
-
-      <span class="call">Prototype in Lovable first; ship the demo as a stateful Node app</span>
-      <span class="why"><b>instead of</b> staying in the no-code mock. Lovable was the right first move &mdash; screens to react to in minutes &mdash; but the product&rsquo;s core claim is a writeback that survives a refresh, and a mock holding component state can&rsquo;t prove that. So the demo moved to a zero-dependency Node app with <code>node:sqlite</code>, deployed on Railway, where the hero beat is a real row flipping. The mock&rsquo;s job was to be discarded.</span>
-    </li>
-    <li>      <span class="call">Ground at request time; never cache state</span>
-      <span class="why"><b>instead of</b> holding a snapshot. <code>copilot()</code> re-queries every turn, so it's structurally grounded, not accurate-by-luck. It cannot name a vendor or date that isn't in the record. Fluency on data it can't see is the failure mode, not the feature.</span>
-    </li>
+    <li><span class="call">Designer</span><span class="why">Where should the approval footprint live so it informs without slowing the user: always visible inside the action card, collapsed until high-stakes, or separated into an audit preview?</span></li>
+    <li><span class="call">Engineering Manager</span><span class="why">Which hardening step would you sequence first: commit-time revalidation, durable pending drafts, idempotency keys, or moving write permission out of the propose service entirely?</span></li>
+    <li><span class="call">Data/Product lead</span><span class="why">What record-freshness threshold would make writeback unsafe? Which fields need provenance before a copilot should act on them?</span></li>
+    <li><span class="call">PMM/Growth</span><span class="why">If the planner is the buyer and the couple is the wedge, should launch copy lead with weekly couple reactivation, fewer coordination loops, or planner capacity without headcount?</span></li>
+    <li><span class="call">GM/Founder</span><span class="why">What is the first paid wedge: planner dashboard, couple assistant, vendor follow-up automation, or multi-wedding capacity management?</span></li>
   </ul>
-  <p style="font-family:var(--sans); font-size:0.9rem; color:var(--muted); margin-top:18px;">The <em>product</em> calls, own one high-frequency job, cede generic inspiration, multiplayer by default, live in the <a href="/preread.html#">pre-read</a>. These are the calls under the hood.</p>
 </section>
 
 <section>
-  <p class="kicker">Open questions &amp; follow-ups</p>
-  <h2>The design-review trail</h2>
-  <p class="lead">The questions we push on internally, each with the current answer and the hardening step it points at. A prototype earns trust by naming its own seams.</p>
+  <p class="kicker">Use if they probe the build</p>
+  <h2>Turn objections into the next decision.</h2>
   <ul class="ledger">
-    <li>
-      <span class="call">Why is a rule engine playing the model? Isn&rsquo;t that a fake demo?</span>
-      <span class="why">Deliberate. The model is the commodity layer &mdash; swappable behind the same three atomic tools &mdash; and keeping it deterministic keeps every design review on the part that isn&rsquo;t commodity: the governed write path. Every sentence is interpolated from live rows, so grounding is by construction, not by luck. <b>Next:</b> Put a real model behind the tools (it only picks the tool; it still can&rsquo;t write) and promote it only when it passes the eval contract on held-out cases.</span>
-    </li>
-    <li>
-      <span class="call">What stops a replayed or forged approval?</span>
-      <span class="why">Writes execute only inside <code>/api/approve</code>, keyed by a server-held pending-action id the client didn&rsquo;t author, and high-stakes actions are refused server-side unless <code>confirmed === true</code>. Replay a decline-cascade approve with <code>confirmed:false</code> and the server writes nothing &mdash; that&rsquo;s eval 4. <b>Next:</b> Idempotency keys per approval, so even a legitimate double-submit can&rsquo;t double-apply.</span>
-    </li>
-    <li>
-      <span class="call">What if the record changed between draft and approve?</span>
-      <span class="why">Today the draft is grounded at propose time and the window is seconds long. The honest answer is that a stale draft could commit against moved state. <b>Next:</b> Re-validate live state at commit time, not just draft time, and carry the user&rsquo;s edits to a draft through the approve payload.</span>
-    </li>
-    <li>
-      <span class="call">What happens to a draft if the server restarts?</span>
-      <span class="why">It&rsquo;s dropped &mdash; <code>pendingActions</code> is an in-memory Map. Acceptable for a prototype; drafts are cheap to regenerate. <b>Next:</b> Durable draft storage, so an approval in flight survives a restart.</span>
-    </li>
-    <li>
-      <span class="call">How do the evals survive a real model?</span>
-      <span class="why">The contract survives; the assertions change. What counts as wrong &mdash; invented tasks, wrong vendor, undeclared writes, ungated cascades, false cheer, injection &mdash; is model-independent. The checks get rewritten from template assertions to behavior assertions. <b>Next:</b> The eval set becomes the release gate: a candidate model is promoted only if it passes without degrading held-out cases.</span>
-    </li>
-    <li>
-      <span class="call">Two parties share this record. Where&rsquo;s the access control?</span>
-      <span class="why">The planner view is read-only with the full audit trail, and every commit is attributed. But actor identity is a demo convention, not authentication. <b>Next:</b> Per-actor auth so the audit trail is trustworthy across parties, and PII in the record treated as an access-control boundary, not a column.</span>
-    </li>
+    <li><span class="call">Why is a rule engine playing the model?</span><span class="why">Ask: should the next version invest first in model quality or in the governed tool contract? My answer: tool contract first, because the model is swappable but the write policy is the product.</span></li>
+    <li><span class="call">What if the record changed between draft and approve?</span><span class="why">Ask: would you re-read state at commit time or make drafts expire aggressively? My answer: both eventually; commit-time revalidation first.</span></li>
+    <li><span class="call">How do evals survive a real model?</span><span class="why">Ask: what should be a release-blocker versus monitored risk? My answer: grounding, declared writes, approval gate, handoff, tone, and injection are blockers; reversal rate is the live trust counter-metric.</span></li>
+    <li><span class="call">Where is access control?</span><span class="why">Ask: what actor model is required before vendors enter the workflow? My answer: planner and couple auth before vendor actions; vendor entities can exist before vendor users do.</span></li>
   </ul>
 </section>
 
 <section id="room-prompts">
-  <p class="kicker">Questions to ask the room</p>
-  <h2>Use the panel to sharpen the next call.</h2>
-  <p class="lead">The page is strongest if it becomes a working session. These prompts turn the current decisions into specific tradeoffs the room can improve.</p>
-  <ul class="ledger">
-    <li>
-      <span class="call">Designer</span>
-      <span class="why">Where should the approval footprint appear: inside the action card, one line above approve, or as a reveal only on high-stakes writes?</span>
-    </li>
-    <li>
-      <span class="call">Engineering Manager</span>
-      <span class="why">Which hardening step would you sequence first: commit-time revalidation, durable pending drafts, or idempotency keys?</span>
-    </li>
-    <li>
-      <span class="call">PMM</span>
-      <span class="why">If the buyer is the planner, which proof point should lead: weekly couple reactivation, fewer vendor coordination loops, or lower reversal rate?</span>
-    </li>
-  </ul>
+  <p class="kicker">Close with this</p>
+  <h2>Make the final five minutes collaborative.</h2>
+  <p class="lead">"If this were our Hitch team and we had two weeks for v2, which one thing would you change before expanding the agent: the approval UX, the data model, the eval harness, or the go-to-market wedge?"</p>
 </section>
 <div class="colophon">
   <p><strong>Hitch Planning</strong> &middot; a working prototype: zero-dependency Node (<code>node:http</code> + <code>node:sqlite</code>), hosted with real persistence. One command runs it, one more runs the eval set. Written and built by Kevin Holland, July 2026.</p>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hitch Planning — Live Review</title>
+<title>Hitch Planning — Panel Ready</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
@@ -11,9 +11,10 @@
 </head>
 <body class="panel-shell">
 <aside class="panel-rail" aria-label="Panel controls">
-  <a class="primary" href="/panel.html">Review</a>
+  <a class="primary" href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
+  <a href="/process.html">Process</a>
   <a href="/assumptions.html">Assumptions</a>
   <a href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
@@ -23,9 +24,9 @@
 
 <header class="panel-top">
   <div>
-    <p class="panel-eyebrow">Hitch Planning · live product review</p>
-    <h1 class="panel-title">One URL for the room.</h1>
-    <p class="panel-dek">Drive the working product, then stay on the site for the PRD, assumptions, architecture, questions, and the v2 agent preview. The goal is a working session, not a presentation.</p>
+    <p class="panel-eyebrow">Hitch Planning · panel ready</p>
+    <h1 class="panel-title">Panel ready.</h1>
+    <p class="panel-dek">Drive the working product, then stay on the site for the PRD, process, assumptions, architecture, questions, and v2 agent preview. The goal is a working session, not a presentation.</p>
     <div class="panel-actions">
       <a class="primary" href="/">Start with the live demo</a>
       <a href="/prd.html">Open the PRD</a>
@@ -35,7 +36,7 @@
 </header>
 
 <main class="panel-main">
-  <section class="panel-grid" aria-label="Live review surfaces">
+  <section class="panel-grid" aria-label="Panel-ready surfaces">
     <a class="panel-card" href="/">
       <span class="panel-label">01 · Demo</span>
       <b>The record acts.</b>
@@ -43,26 +44,31 @@
     </a>
     <a class="panel-card" href="/prd.html">
       <span class="panel-label">02 · PRD</span>
-      <b>The 300-word bet.</b>
-      <span>Make the record active, sell the seam between couple engagement and planner capacity.</span>
+      <b>The 240-word bet.</b>
+      <span>One problem, one evidence base, one copilot job, one QA/eval gate, and one buyer frame.</span>
+    </a>
+    <a class="panel-card" href="/process.html">
+      <span class="panel-label">03 · Process</span>
+      <b>How Kevin built it.</b>
+      <span>Manual read, research, sketches, prototype ladder, Railway deployment, and review passes.</span>
     </a>
     <a class="panel-card" href="/assumptions.html">
-      <span class="panel-label">03 · Assumptions</span>
+      <span class="panel-label">04 · Assumptions</span>
       <b>What must be true.</b>
-      <span>Planner-as-buyer, weekly engagement, approval tolerance, record accuracy, and reversal-rate trust.</span>
+      <span>Planner-as-buyer, couple engagement, write approval, record freshness, and trust counter-metrics.</span>
     </a>
     <a class="panel-card" href="/architecture.html">
-      <span class="panel-label">04 · Architecture</span>
+      <span class="panel-label">05 · Architecture</span>
       <b>Draft and commit split.</b>
       <span>The proposing path writes nothing. Approval is the only mutation path, and the high-stakes gate is server-enforced.</span>
     </a>
     <a class="panel-card" href="/decisions.html">
-      <span class="panel-label">05 · Room questions</span>
+      <span class="panel-label">06 · Questions</span>
       <b>Make it collaborative.</b>
-      <span>Use the design, engineering, and go-to-market prompts when the conversation needs a handoff.</span>
+      <span>Ask the panel as Hitch teammates: design, engineering, PMM, data/product, and operator lenses.</span>
     </a>
     <a class="panel-card" href="/next.html#agent-preview">
-      <span class="panel-label">06 · Roadmap</span>
+      <span class="panel-label">07 · Roadmap</span>
       <b>V2 active-agent preview.</b>
       <span>Simulated only: the agent reads the richer record, proposes tools, classifies policy, and stops for approval.</span>
     </a>
@@ -73,6 +79,7 @@
     <ul>
       <li><strong>Design:</strong> Where should the footprint line live so it informs without slowing the user?</li>
       <li><strong>Engineering:</strong> Would you revalidate at commit time or move the gate deeper into the tool layer?</li>
+      <li><strong>Data/product:</strong> What would make the record untrustworthy enough to hold writeback?</li>
       <li><strong>PMM:</strong> Would you lead with the couple promise or planner capacity?</li>
     </ul>
   </section>
@@ -84,7 +91,8 @@
       <li>Open the demo and ask, “What’s left before the wedding?”</li>
       <li>Approve the drafted vendor follow-up and show the writeback plus audit trail.</li>
       <li>Trigger “The Hendersons declined” and show the high-stakes gate.</li>
-      <li>Then move to the PRD, assumptions, and architecture only as the room pulls there.</li>
+      <li>Use Process if they ask how the work was developed; use Architecture if they ask how the write path is governed.</li>
+      <li>Then move to PRD, assumptions, and questions as the room pulls there.</li>
     </ul>
   </section>
 </main>

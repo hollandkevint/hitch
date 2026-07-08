@@ -161,9 +161,10 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Review</a>
+  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
+  <a href="/process.html">Process</a>
   <a href="/assumptions.html">Assumptions</a>
   <a href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
@@ -224,7 +225,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
       <button type="button" class="pt" data-v="flows" style="left:15%;bottom:13%" data-title="Flows — writes automatically" data-why="Low blast radius, trivially reversible. Gating it would just train people to click through the next dialog that matters. It writes and logs; no confirm."><span class="dot"></span>Reorder a to-do</button>
       <button type="button" class="pt" data-v="flows" style="left:31%;bottom:25%" data-title="Flows — writes automatically" data-why="Reversible and low-stakes — recording an offsetting change restores it. This is the app's happy-path writeback: approve, the row flips, the audit trail gains a line."><span class="dot"></span>Mark a task done</button>
       <button type="button" class="pt" data-v="flows" style="left:20%;bottom:37%" data-title="Flows — writes automatically" data-why="An append to the record, no downstream party affected. Cheap and reversible, so it flows through the same approve path without a confirm gate."><span class="dot"></span>Log a vendor note</button>
-      <button type="button" class="pt" data-v="gated" style="left:42%;bottom:74%" data-title="Gated — names the cascade, confirms server-side" data-why="The Hendersons declining moves the caterer's headcount, the invoice, and the seating. High blast radius across parties, so the gate fires and names that cascade before it asks. Refused server-side unless confirmed === true. That's eval 4."><span class="dot"></span>Guest count 120 → 118</button>
+      <button type="button" class="pt" data-v="gated" style="left:42%;bottom:74%" data-title="Gated — names the cascade, confirms server-side" data-why="The Hendersons declining moves the caterer's headcount, contract exposure, and the seating. High blast radius across parties, so the gate fires and names that cascade before it asks. Refused server-side unless confirmed === true. That's eval 4."><span class="dot"></span>Guest count 120 → 118</button>
       <button type="button" class="pt" data-v="refused" style="left:77%;bottom:66%" data-title="Refused without explicit confirmation" data-why="An irreversible external action. The agent drafts it from the real record and hands it over — it never auto-sends. Value is high and you can't take it back, so the human owns the send."><span class="dot"></span>Send the vendor email</button>
       </div>
       <span class="axis-x">harder to reverse →</span>
@@ -255,7 +256,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
   <p class="kicker">At scale</p>
   <h2>The same policy in a regulated domain</h2>
   <p>Swap the wedding&rsquo;s <code>tasks</code> table for any governed domain record &mdash; a customer master, a clinical schedule, a territory model &mdash; and the questions don&rsquo;t change: who may read which rows, which writes are cheap and which change another party&rsquo;s reality, what proof gates a write, and how you measure whether trust is warranted.</p>
-  <p>The worked example above is the whole policy in miniature. &ldquo;The Hendersons declined&rdquo; is a two-guest RSVP change &mdash; but it moves the caterer&rsquo;s headcount, the invoice, and the seating math. Value times reversibility says that write gets a gate, and the gate names the cascade before it asks. The same test applied to a regulated record decides which agent actions flow, which get a human approval, and which the agent must refuse outright.</p>
+  <p>The worked example above is the whole policy in miniature. &ldquo;The Hendersons declined&rdquo; is a two-guest RSVP change &mdash; but it moves the caterer&rsquo;s headcount, contract exposure, and the seating math. Value times reversibility says that write gets a gate, and the gate names the cascade before it asks. The same test applied to a regulated record decides which agent actions flow, which get a human approval, and which the agent must refuse outright.</p>
   <h3>The instrumentation, not the vibes</h3>
   <p>Trust is measured, not asserted: the reversal counter-metric (writebacks the user reverses or edits) is instrumented first, and the PRD carries a kill test &mdash; reversals above ~15% after two iterations and writeback gets pulled while grounded answers stay. Governance that can&rsquo;t lose an argument with its own data isn&rsquo;t governance.</p>
 </section>

@@ -175,9 +175,10 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 </head>
 <body>
 <aside class="panel-rail" aria-label="Panel controls">
-  <a href="/panel.html">Review</a>
+  <a href="/panel.html">Panel Ready</a>
   <a href="/prd.html">PRD</a>
   <a href="/">Demo</a>
+  <a href="/process.html">Process</a>
   <a href="/assumptions.html">Assumptions</a>
   <a class="primary" href="/architecture.html">Architecture</a>
   <a href="/decisions.html">Questions</a>
@@ -187,7 +188,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
 
 <div class="masthead">
   <div class="masthead-inner">
-    <p class="eyebrow">Hitch Planning &middot; 03 &middot; Architecture</p>
+    <p class="eyebrow">Hitch Planning &middot; 04 &middot; Architecture</p>
     <div class="mast-brand">
       <span class="mast-mark" aria-hidden="true">
         <svg viewBox="0 0 56 34" width="56" height="34">
@@ -198,7 +199,7 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
       </span>
       <h1>Draft and commit are separate paths</h1>
     </div>
-    <p class="dek">The thing that proposes an action never performs it. Approval is the only path that mutates the record.</p>
+    <p class="dek">The thing that proposes an action never performs it. Approval is the only path that mutates the record, and the B2B2C data contract is explicit.</p>
     <p class="byline">Kevin Holland &middot; July 2026</p>
     <div class="hub">
       <a href="/">Live app <span class="arw">&rarr;</span></a>
@@ -284,6 +285,34 @@ nav.jump { box-shadow: 0 1px 0 rgba(38,48,43,0.03); }
     <p class="lbl">Why this is the point, not a wedding toy</p>
     <p>Swap the wedding's <code>tasks</code> table for a real domain ontology and the architecture is identical: atomic tools over a governed system of record, an approval gate, and an eval set that catches wrong actions. The wedding is a stand-in for the pattern, a governed record an agent can act on without drifting. I built the small version so the real one is a conversation, not a leap.</p>
   </div>
+</section>
+
+<section id="b2b2c-data-product">
+  <p class="kicker">B2B2C data-product contract</p>
+  <h2>The product is the governed record, not the chat surface.</h2>
+  <p class="lead">For a wedding planning startup, architecture has to respect three actors: the planner buys and administers the workflow, the couple uses it in the messy middle, and vendors become referenced entities without getting full access. The copilot is only useful if the record is trustworthy enough to act on and constrained enough to audit.</p>
+  <ul class="ledger">
+    <li><span class="call">Actor-aware record</span><span class="why">Every row needs an owner, freshness signal, and permission posture: planner-owned business state, couple-facing tasks, vendor references, and private notes should not collapse into one undifferentiated prompt context.</span></li>
+    <li><span class="call">Action dictionary before model choice</span><span class="why">Tools declare read set, write set, reversibility, blast radius, and approval policy. A future LLM can pick tools, but it does not get to invent writes.</span></li>
+    <li><span class="call">Commit-time validation</span><span class="why">Drafts should be cheap and reversible; commits should re-read live state, apply idempotently, and fail closed when the underlying record changed.</span></li>
+    <li><span class="call">Audit as product UX</span><span class="why">Planner trust comes from visible provenance: who asked, what was proposed, what was approved, what rows changed, and which eval/policy gate allowed it.</span></li>
+    <li><span class="call">QA/evals as release policy</span><span class="why">Seven binary evals are not demo tests; they are the release gate for model, prompt, and tool changes. Grounding, declared writes, high-stakes approval, handoff, judgment tone, and injection safety all have to stay green.</span></li>
+  </ul>
+</section>
+
+<section id="data-product-best-practices">
+  <p class="kicker">What the panel should hear</p>
+  <h2>Data-product best practices map directly to the wedding use case.</h2>
+  <table>
+    <thead><tr><th>Practice</th><th>Wedding planning translation</th><th>Product implication</th></tr></thead>
+    <tbody>
+      <tr><td>Source-of-truth contract</td><td>Tasks, vendors, guests, budgets, and audit log are the canonical state.</td><td>The agent grounds on rows, not memory or chat history.</td></tr>
+      <tr><td>Metric tree</td><td>Weekly planning sessions, approved write rate, time to next action, reversed writes.</td><td>Capacity and trust are measured together.</td></tr>
+      <tr><td>Governed mutation</td><td>No direct writes from the propose path; server-side approval gate owns mutations.</td><td>Trust scales before autonomy scales.</td></tr>
+      <tr><td>Observability</td><td>Log prompt, tool plan, approval, write result, and reversal.</td><td>Failures become roadmap input instead of anecdotes.</td></tr>
+      <tr><td>Role-based access</td><td>Planner, couple, and vendor-adjacent data have different visibility.</td><td>v2 needs auth and policy before deeper agents.</td></tr>
+    </tbody>
+  </table>
 </section>
 
 <section id="panel-challenge">
